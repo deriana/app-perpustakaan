@@ -36,6 +36,21 @@
     <link rel="shortcut icon" href="assets/images/favicon.png" />
 </head>
 
+<style>
+    /* Membuat background modal menjadi transparan dengan warna gelap */
+    .modal-content {
+        background-color: rgba(0, 0, 0, 0.7); /* Warna hitam dengan transparansi 70% */
+        border-radius: 10px; /* Opsional: menambahkan sedikit rounded corner */
+        color: white; /* Menjadikan teks di dalam modal berwarna putih */
+    }
+
+    /* Mengubah latar belakang overlay modal */
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5); /* Overlay yang lebih gelap namun tetap transparan */
+    }
+</style>
+
+
 <body>
     <div class="container-scroller">
         <!-- partial:partials/_sidebar.html -->
@@ -118,7 +133,7 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
-                    <a class="nav-link" href="pages/forms/basic_elements.html">
+                    <a class="nav-link" href="list_buku.php">
                         <span class="menu-icon">
                             <i class="mdi mdi-book"></i>
                         </span>
