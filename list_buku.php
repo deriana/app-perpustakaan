@@ -1,8 +1,20 @@
 <?php
+session_start();
+
+// Cek apakah pengguna sudah login atau belum
+if (!isset($_SESSION['id_user'])) {
+    // Jika pengguna belum login akan di direct ke login.php
+    header("Location: login.php");
+    exit();
+}
+
 include_once("template/header.php");
 require_once("function.php");
 
+$id_user = $_SESSION['id_user']; // Ambil ID user dari session
+
 // Check if form is submitted
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle adding a book
     if (isset($_POST['simpan'])) {
@@ -127,7 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="book-container">
                     <?php
                     $table_buku = query("SELECT * FROM books");
-                    foreach ($table_buku as $buku): ?>
+                    foreach ($table_buku as $buku):
+                        // Cek apakah buku sudah dipinjam oleh user ini
+                        $borrowed = query("SELECT * FROM borrows WHERE id_user = '$id_user' AND id_books = '$buku[id_books]' AND status = 'borrowed'");
+                    ?>
                         <div class="book-item">
                             <img src="uploads/<?= htmlspecialchars($buku['cover_path']); ?>" alt="sampul buku">
                             <div class="book-desk">
@@ -140,11 +155,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <i class="mdi mdi-calendar"></i>
                                     <h3>Date: <?= htmlspecialchars($buku['book_date']) ?></h3>
                                 </div>
-                                <div class="book-desk-item">
-                                    <div></div>
-                                    <h3>Sinopsis</h3>
-                                </div>
                                 <p><?= htmlspecialchars($buku['synopsis']) ?></p>
+
+                                <?php if (empty($borrowed)): ?>
+                                    <!-- Jika buku belum dipinjam, tampilkan tombol Pinjam -->
+                                    <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
+                                <?php else: ?>
+                                    <!-- Jika buku sudah dipinjam -->
+                                    <span class="badge badge-warning">Sudah Dipinjam</span>
+                                <?php endif; ?>
+
                                 <div>
                                     <button class="btn btn-success btn-sm"
                                         data-toggle="modal"

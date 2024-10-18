@@ -116,3 +116,29 @@ function hapus_buku($id) {
 
     return mysqli_affected_rows($koneksi);
 }
+
+function pinjam_buku($id_user, $id_books)
+{
+    global $koneksi;
+
+    $query_cek = "SELECT * FROM borrows WHERE id_user = '$id_user' AND id_books = '$id_books' AND status ='borrowed'";
+    $cek = mysqli_query($koneksi, $query_cek);
+
+    if(mysqli_num_rows($cek) > 0) {
+        return false;
+    }
+
+    $query = "INSERT INTO borrows (id_user, id_books, borrow_date, status) VALUES ('$id_user', '$id_books', NOW(), 'borrowed')";
+    return mysqli_query($koneksi, $query);
+
+}
+
+function kembalikan_buku($id_user, $id_books) {
+    global $koneksi;
+
+    $query = "UPDATE borrows
+                SET status = 'returned', return_date = NOW()
+                WHERE id_user = '$id_user' AND '$id_books' AND status = 'borrowed'";
+    
+    return mysqli_query($koneksi, $query);
+}

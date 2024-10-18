@@ -141,7 +141,7 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
-                    <a class="nav-link" href="pages/tables/basic-table.html">
+                    <a class="nav-link" href="buku_saya.php">
                         <span class="menu-icon">
                             <i class="mdi mdi-book-open-page-variant"></i>
                         </span>
@@ -154,24 +154,6 @@
                             <i class="mdi mdi-chart-bar"></i>
                         </span>
                         <span class="menu-title">Laporan</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="pages/icons/mdi.html">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-book-plus"></i>
-                        </span>
-                        <span class="menu-title">Tambah Buku</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a
-                        class="nav-link"
-                        href="http://www.bootstrapdash.com/demo/corona-free/jquery/documentation/documentation.html">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-cart"></i>
-                        </span>
-                        <span class="menu-title">Keranjang</span>
                     </a>
                 </li>
                 <li class="nav-item menu-items">
