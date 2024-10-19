@@ -64,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         display: flex;
         flex-direction: row;
         transition: 0.5s ease-in-out;
+        overflow: hidden;
     }
 
     .book-item>img {
@@ -84,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             gap: 10px;
             justify-content: space-around;
             padding: 0 10px;
+            overflow: hidden;
         }
     }
 
@@ -125,6 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     .book-desk {
         display: none;
     }
+
+    .book-desk>p {
+        overflow-y: auto;
+    }
 </style>
 
 <div class="main-panel m-4 d-flex flex-direction-column">
@@ -135,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="book-container">
                     <?php
                     // Ambil data buku yang dipinjam oleh user ini
-                    $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, br.borrow_date 
+                    $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, b.is_read, b.is_favorite, br.borrow_date 
                               FROM borrows br
                               JOIN books b ON br.id_books = b.id_books
                               WHERE br.id_user = '$id_user' AND br.status = 'borrowed'";
@@ -155,6 +161,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <h3>Date Borrowed: <?= htmlspecialchars($buku['borrow_date']) ?></h3>
                                 </div>
                                 <p><?= htmlspecialchars($buku['synopsis']) ?></p>
+
+                                <!-- Tombol tandai sudah dibaca -->
+                                <?php if ($buku['is_read']): ?>
+                                    <a href="sudah_dibaca.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_read=0" class="btn btn-warning">
+                                        Tandai Belum Dibaca
+                                    </a>
+                                <?php else: ?>
+                                    <a href="sudah_dibaca.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_read=1" class="btn btn-success">
+                                        Tandai Sudah Dibaca
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Tombol Buku Favorite -->
+                                <?php if ($buku['is_favorite']): ?>
+                                    <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=0" class="btn btn-warning">
+                                        Delete Fav
+                                </a>
+                                <?php else: ?>
+                                    <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=1" class="btn btn-success">
+                                        Favorite
+                                </a>
+                                <?php endif; ?>
                                 
                                 <!-- Tombol Kembalikan Buku -->
                                 <a href="kembalikan.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-danger">

@@ -64,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         display: flex;
         flex-direction: row;
         transition: 0.5s ease-in-out;
+        overflow: hidden;
     }
 
     .book-item>img {
@@ -84,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             gap: 10px;
             justify-content: space-around;
             padding: 0 10px;
+            overflow: hidden;
         }
     }
 
@@ -124,6 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     .book-desk {
         display: none;
+    }
+
+    .book-desk>p {
+        overflow-y: auto;
     }
 </style>
 
@@ -192,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="tambahBukuLabel">Tambah Data Tamu</h5>
+                <h5 class="modal-title" id="tambahBukuLabel">Tambah Data Buku</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

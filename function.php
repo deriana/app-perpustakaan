@@ -142,3 +142,20 @@ function kembalikan_buku($id_user, $id_books) {
 
     return mysqli_query($koneksi, $query);
 }
+
+function is_read($id_books, $is_read)
+{
+    global $koneksi;
+
+    $query = "UPDATE books set is_read = '$is_read' WHERE id_books = '$id_books'";
+
+    return mysqli_query($koneksi, $query);
+}
+
+function is_favorite($id_books, $is_favorite)
+{
+    global $koneksi;
+    $query = "UPDATE books set is_favorite = '$is_favorite' WHERE id_books = '$id_books'";
+
+    return mysqli_query($koneksi, $query);
+}
