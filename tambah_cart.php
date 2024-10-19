@@ -29,17 +29,17 @@ if (isset($_GET['id_books'])) {
     }
 
     // Tambahkan buku ke keranjang
+    // Tambahkan buku ke keranjang
     if (add_to_cart($id_user, $id_books)) {
         echo "<script>
-                alert('Buku berhasil ditambahkan ke keranjang!');
-                window.location.href = 'list_buku.php'; // Redirect ke halaman keranjang
-              </script>";
+            alert('Buku berhasil ditambahkan ke keranjang!');
+            window.location.href = 'list_buku.php'; // Redirect ke halaman keranjang
+          </script>";
     } else {
-        echo "<script>alert('Gagal menambahkan buku ke keranjang. Coba lagi.');</script>";
+        echo "<script>alert('Gagal menambahkan buku ke keranjang. Buku sudah ada di keranjang.');</script>";
         echo "<script>window.location.href = 'list_buku.php';</script>";
     }
 } else {
     echo "<script>alert('ID buku tidak valid.');</script>";
     echo "<script>window.location.href = 'list_buku.php';</script>";
 }
-?>

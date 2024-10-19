@@ -181,17 +181,21 @@ function add_to_cart($id_user, $id_books)
 {
     global $koneksi;
 
+    // Cek apakah buku sudah ada di keranjang
+    if (is_already_in_cart($id_user, $id_books)) {
+        return false; // Jika sudah ada, jangan lakukan apa-apa
+    }
+
     $query = "INSERT INTO cart (id_user, id_books) VALUES ('$id_user', '$id_books')";
     if (!mysqli_query($koneksi, $query)) {
         die("Add to cart Error: " . mysqli_error($koneksi));
     }
 
-    if(mysqli_query($koneksi, $query)) {
-        log_activity($id_user, 'add', $id_books);
-    }
+    log_activity($id_user, 'add', $id_books); // Panggil log_activity hanya jika berhasil menambahkan
 
-    // return mysqli_affected_rows($koneksi);
+    return true; // Mengembalikan true jika berhasil
 }
+
 
 function get_cart_books($id_user)
 {
