@@ -137,8 +137,8 @@ function kembalikan_buku($id_user, $id_books) {
     global $koneksi;
 
     $query = "UPDATE borrows
-                SET status = 'returned', return_date = NOW()
-                WHERE id_user = '$id_user' AND '$id_books' AND status = 'borrowed'";
-    
+              SET status = 'returned', return_date = NOW() 
+              WHERE id_user = '$id_user' AND id_books = '$id_books' AND status = 'borrowed'";
+
     return mysqli_query($koneksi, $query);
 }

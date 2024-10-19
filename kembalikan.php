@@ -10,7 +10,7 @@ if (!isset($_SESSION['id_user'])) {
 }
 
 $id_user = $_SESSION['id_user']; // Ambil ID user dari session
-$id_books = $_GET['id_books'];   // Ambil ID buku dari URL
+$id_books = $_GET['id_books'];   // Ambil ID buku dari URL (pastikan ini diambil dengan benar)
 
 // Panggil fungsi untuk mengembalikan buku
 if (kembalikan_buku($id_user, $id_books)) {
@@ -20,4 +20,3 @@ if (kembalikan_buku($id_user, $id_books)) {
     echo "<script>alert('Terjadi kesalahan saat mengembalikan buku.');</script>";
     echo "<script>window.location.href='buku_saya.php';</script>";
 }
-?>
