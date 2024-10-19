@@ -30,13 +30,20 @@ function query($query)
 {
     global $koneksi;
 
+    // Eksekusi kueri
     $result = mysqli_query($koneksi, $query);
-    $rows = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $rows[] = $row;
+    
+    // Jika kueri SELECT, kita ambil hasilnya
+    if (stripos($query, 'SELECT') === 0) {
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
     }
 
-    return $rows;
+    // Untuk kueri INSERT, UPDATE, DELETE, kita hanya mengembalikan true/false
+    return $result; // Ini akan mengembalikan true jika berhasil, false jika gagal
 }
 
 function tambah_buku($data)
@@ -158,4 +165,38 @@ function is_favorite($id_books, $is_favorite)
     $query = "UPDATE books set is_favorite = '$is_favorite' WHERE id_books = '$id_books'";
 
     return mysqli_query($koneksi, $query);
+}
+
+function add_to_cart($id_user, $id_books) {
+    global $koneksi; 
+
+    $query = "INSERT INTO cart (id_user, id_books) VALUES ('$id_user', '$id_books')";
+    if (!mysqli_query($koneksi, $query)) {
+        die("Add to cart Error: " . mysqli_error($koneksi));
+    }
+    return mysqli_affected_rows($koneksi);
+}
+
+function get_cart_books($id_user) {
+    return query("SELECT * FROM cart WHERE id_user = '$id_user'");
+}
+
+function is_already_borrowed($id_user, $id_books) {
+    $result = query("SELECT * FROM borrows WHERE id_user = '$id_user' AND id_books = '$id_books' AND status = 'borrowed'");
+    return count($result) > 0;
+}
+
+function remove_from_cart($id_cart) {
+    $query = "DELETE FROM cart WHERE id_cart = '$id_cart'";
+    return query($query);
+}
+
+function clear_cart($id_user) {
+    $query = "DELETE FROM cart WHERE id_user = '$id_user'";
+    return query($query);
+}
+
+function is_already_in_cart($id_user, $id_books) {
+    $result = query("SELECT * FROM cart WHERE id_user = '$id_user' AND id_books = '$id_books'");
+    return count($result) > 0;
 }

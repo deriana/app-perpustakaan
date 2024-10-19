@@ -43,6 +43,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </script>";
         }
     }
+
+    if (isset($_POST['add_to_cart'])) {
+        $id_books = $_POST['id_books'];
+
+        // Cek apakah buku sudah dipinjam
+        if (is_already_borrowed($id_user, $id_books)) {
+            echo "<script>alert('Anda sudah meminjam buku ini!');</script>";
+        } elseif (is_already_in_cart($id_user, $id_books)) {
+            // Cek apakah buku sudah ada di keranjang
+            echo "<script>alert('Buku ini sudah ada di keranjang!');</script>";
+        } else {
+            if (add_to_cart($id_user, $id_books)) {
+                echo "<script>
+                        alert('Buku berhasil ditambahkan ke keranjang!');
+                        document.location.href = 'cart.php'; // Redirect ke halaman keranjang
+                      </script>";
+            } else {
+                echo "<script>
+                        alert('Gagal menambahkan buku ke keranjang. Coba lagi.');
+                      </script>";
+            }
+        }
+    }
 }
 
 
@@ -163,13 +186,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                                 <p><?= htmlspecialchars($buku['synopsis']) ?></p>
 
-                                <?php if (empty($borrowed)): ?>
-                                    <!-- Jika buku belum dipinjam, tampilkan tombol Pinjam -->
-                                    <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
+                                <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
+                                    <a href="tambah_cart.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-success btn-sm">Tambah ke Keranjang</a>
                                 <?php else: ?>
-                                    <!-- Jika buku sudah dipinjam -->
-                                    <span class="badge badge-warning">Sudah Dipinjam</span>
+                                    <span class="badge badge-warning">Sudah Di Keranjang</span>
                                 <?php endif; ?>
+
+                                <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
+                                    <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
+                                    <?php else: ?>
+                                        <span class="badge badge-warning">Sudah Di Pinjam Atau Di Keranjang</span>
+                                    <?php endif; ?>
 
                                 <div>
                                     <button class="btn btn-success btn-sm"

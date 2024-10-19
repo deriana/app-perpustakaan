@@ -141,6 +141,14 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
+                    <a class="nav-link" href="cart.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi-cart"></i>
+                        </span>
+                        <span class="menu-title">Keranjang</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
                     <a class="nav-link" href="buku_saya.php">
                         <span class="menu-icon">
                             <i class="mdi mdi-book-open-page-variant"></i>
