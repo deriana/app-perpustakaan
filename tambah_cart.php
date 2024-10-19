@@ -32,7 +32,7 @@ if (isset($_GET['id_books'])) {
     if (add_to_cart($id_user, $id_books)) {
         echo "<script>
                 alert('Buku berhasil ditambahkan ke keranjang!');
-                window.location.href = 'cart.php'; // Redirect ke halaman keranjang
+                window.location.href = 'list_buku.php'; // Redirect ke halaman keranjang
               </script>";
     } else {
         echo "<script>alert('Gagal menambahkan buku ke keranjang. Coba lagi.');</script>";

@@ -165,6 +165,14 @@
                     </a>
                 </li>
                 <li class="nav-item menu-items">
+                    <a class="nav-link" href="riwayat_user.php">
+                        <span class="menu-icon">
+                            <i class="mdi mdi mdi-clock"></i>
+                        </span>
+                        <span class="menu-title">Riwayat User</span>
+                    </a>
+                </li>
+                <li class="nav-item menu-items">
                     <a
                         class="nav-link"
                         href="http://www.bootstrapdash.com/demo/corona-free/jquery/documentation/documentation.html">
