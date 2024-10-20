@@ -33,18 +33,26 @@ function query($query)
     // Eksekusi kueri
     $result = mysqli_query($koneksi, $query);
 
+    // Check if the query execution was successful
+    if (!$result) {
+        // Output MySQL error for debugging
+        echo "Query Error: " . mysqli_error($koneksi);
+        return false; // Return false on failure
+    }
+
     // Jika kueri SELECT, kita ambil hasilnya
     if (stripos($query, 'SELECT') === 0) {
         $rows = [];
         while ($row = mysqli_fetch_assoc($result)) {
             $rows[] = $row;
         }
-        return $rows;
+        return $rows; // Return the array of rows
     }
 
     // Untuk kueri INSERT, UPDATE, DELETE, kita hanya mengembalikan true/false
-    return $result; // Ini akan mengembalikan true jika berhasil, false jika gagal
+    return $result; // This will return true if successful, false if failed
 }
+
 
 function tambah_buku($data)
 {
@@ -214,12 +222,13 @@ function remove_from_cart($id_cart)
     return query($query);
 }
 
-function clear_cart($id_user) {
+function clear_cart($id_user)
+{
     $cart_items = get_cart_books($id_user);
     foreach ($cart_items as $item) {
         log_activity($id_user, 'remove', $item['id_books']);
     }
-    
+
     $query = "DELETE FROM cart WHERE id_user = '$id_user'";
     return query($query);
 }
@@ -247,15 +256,130 @@ function get_activity_logs($id_user, $activity_type = '', $start_date = '', $end
               JOIN books b ON al.id_books = b.id_books
               WHERE al.id_user = '$id_user'";
 
-            if(!empty($activity_type)) {
-                $query .="AND al.activity_type = '$activity_type'";
-            }
+    if (!empty($activity_type)) {
+        $query .= "AND al.activity_type = '$activity_type'";
+    }
 
-            if(!empty($start_date) && !empty($end_date)) {
-                $query .="AND al.timestamp BETWEEN '$start_date' AND '$end_date'";
-            }
+    if (!empty($start_date) && !empty($end_date)) {
+        $query .= "AND al.timestamp BETWEEN '$start_date' AND '$end_date'";
+    }
 
-            $query .= "ORDER BY al.timestamp DESC";
+    $query .= "ORDER BY al.timestamp DESC";
 
-            return query($query);
+    return query($query);
+}
+
+function tambah_user($data)
+{
+    global $koneksi;
+
+    $username = htmlspecialchars($data["user_name"]);
+    $user_password = htmlspecialchars($data["user_password"]);
+    $role = htmlspecialchars($data["role"]);
+    $password_hash = password_hash($user_password, PASSWORD_BCRYPT);
+
+    $pf_img = ''; // Variabel default untuk foto profil
+
+    // Memeriksa apakah ada file yang diunggah
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $namaFile = $_FILES['foto']['name'];
+        $tmpName = $_FILES['foto']['tmp_name'];
+
+        // Membuat nama file baru agar unik
+        $namaFileBaru = uniqid() . '_' . $namaFile;
+        $destination = "pf_img/" . $namaFileBaru;
+
+        // Memindahkan file yang di-upload ke direktori tujuan
+        if (move_uploaded_file($tmpName, $destination)) {
+            $pf_img = $namaFileBaru; // Set $pf_img dengan nama file yang telah diunggah
+        } else {
+            die("Error: Failed to upload image.");
+        }
+    }
+
+    // Validasi nilai role
+    if ($role != 'admin' && $role != 'user') {
+        die("Error: Invalid role value.");
+    }
+
+    // Query untuk memasukkan data user
+    $query = "INSERT INTO users (user_name, user_password, role, pf_img) 
+              VALUES ('$username', '$password_hash', '$role', '$pf_img')";
+
+    // Debugging untuk cek error pada SQL
+    if (!mysqli_query($koneksi, $query)) {
+        die("SQL Error: " . mysqli_error($koneksi));
+    }
+
+    return mysqli_affected_rows($koneksi);
+}
+
+function ubah_user($data)
+{
+    global $koneksi;
+
+    $id_user = htmlspecialchars($data['id_user']);
+    $username = htmlspecialchars($data["user_name"]);
+    $role = htmlspecialchars($data["role"]);
+    $pf_img = '';
+
+    $valid_roles = ['admin', 'users'];
+
+    if (!in_array($role, $valid_roles)) {
+        die("Invalid role value.");
+    }
+
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $namaFile = $_FILES['foto']['name'];
+        $tmpName = $_FILES['foto']['tmp_name'];
+
+        $namaFileBaru = uniqid() . '_' . $namaFile;
+        $destination = "pf_img/" . $namaFileBaru;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            $pf_img = $namaFileBaru;
+        } else {
+            die("Error: Failed to upload image.");
+        }
+    }
+
+    $query = "UPDATE users SET
+                user_name = '$username',
+                role = '$role'";
+
+    if ($pf_img !== '') {
+        $query .= ", pf_img = '$pf_img'";
+    }
+
+    $query .= " WHERE id_user = '$id_user'";
+
+    if (!mysqli_query($koneksi, $query)) {
+        die("Error updating user: " . mysqli_error($koneksi));
+    }
+
+    return mysqli_affected_rows($koneksi);
+}
+
+function hapus_user($id)
+{
+    global $koneksi;
+    $query = "DELETE FROM users WHERE id_user = '$id'";
+    mysqli_query($koneksi, $query);
+
+    return mysqli_affected_rows($koneksi);
+}
+
+function ganti_password($data) {
+    global $koneksi;
+
+    $id_user = htmlspecialchars($data['id_user']);
+    $password = htmlspecialchars($data['user_password']);
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+    $query = "UPDATE users SET
+            user_password = '$password_hash'
+            WHERE id_user = '$id_user'";
+    mysqli_query($koneksi, $query);
+
+    return mysqli_affected_rows($koneksi);
 }

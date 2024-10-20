@@ -12,8 +12,8 @@ include_once("template/header.php");
 require_once("function.php");
 
 $activity_type = isset($_GET['activity_type']) ? $_GET['activity_type'] : '';
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d');
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
 $id_user = $_SESSION['id_user'];
 
@@ -51,6 +51,7 @@ $activity_logs = get_activity_logs($id_user, $activity_type, $start_date, $end_d
     <table class="table table-bordered mt-4">
         <thead>
             <tr>
+                <th>No</th>
                 <th>Nama Pengguna</th>
                 <th>Judul Buku</th>
                 <th>Jenis Aktivitas</th>
@@ -58,9 +59,12 @@ $activity_logs = get_activity_logs($id_user, $activity_type, $start_date, $end_d
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($activity_logs)): ?>
+            <?php 
+            $no = 1;
+            if (!empty($activity_logs)): ?>
                 <?php foreach ($activity_logs as $log): ?>
                     <tr>
+                        <td><?= $no++; ?></td>
                         <td><?= htmlspecialchars($log['user_name']) ?></td>
                         <td><?= htmlspecialchars($log['title']) ?></td>
                         <td><?= htmlspecialchars($log['activity_type']) ?></td>

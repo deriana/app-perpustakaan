@@ -140,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="card-body">
                 <div class="book-container">
                     <?php
-                    // Ambil data buku yang dipinjam oleh user ini
                     $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, b.is_read, b.is_favorite, br.borrow_date 
                               FROM borrows br
                               JOIN books b ON br.id_books = b.id_books

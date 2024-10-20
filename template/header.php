@@ -125,7 +125,7 @@
                     <span class="nav-link">Navigation</span>
                 </li>
                 <li class="nav-item menu-items">
-                    <a class="nav-link" href="index.html">
+                    <a class="nav-link" href="index.php">
                         <span class="menu-icon">
                             <i class="mdi mdi-speedometer"></i>
                         </span>
@@ -175,7 +175,7 @@
                 <li class="nav-item menu-items">
                     <a
                         class="nav-link"
-                        href="http://www.bootstrapdash.com/demo/corona-free/jquery/documentation/documentation.html">
+                        href="users.php">
                         <span class="menu-icon">
                             <i class="mdi mdi-account"></i>
                         </span>
