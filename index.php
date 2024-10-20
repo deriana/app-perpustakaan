@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+// Cek apakah pengguna sudah login atau belum
+if (!isset($_SESSION['id_user'])) {
+    // Jika pengguna belum login akan di direct ke login.php
+    header("Location: login.php");
+    exit();
+}
+
 include_once("template/header.php");
 require_once("koneksi.php");
 require_once("function.php");
@@ -8,51 +16,63 @@ $books = query("SELECT * FROM books");
 
 if ($books === false) {
     echo "Failed to fetch data from the database.";
+    exit;
 }
+
+$id_user = $_SESSION['id_user']; // Get the logged-in user's ID
+
+// Fetch only borrows for the logged-in user
+$borrows = query("SELECT * FROM borrows WHERE id_user = '$id_user'");
+
+
+$readCount = count(array_filter($borrows, fn($b) => $b['is_read'] == 1));
+$unreadCount = count(array_filter($borrows, fn($b) => $b['is_read'] == 0));
+
+$limitedBooks = array_slice($books, 0, 5);
 ?>
 
 <div class="main-panel">
     <div class="main-panel">
         <div class="row">
             <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                <div class="card bg-success text-white">
+                <div class="card bg-primary text-white">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-9">
                                 <div class="d-flex align-items-center align-self-start">
                                     <h3 class="mb-0">
-                                        <?= count(array_filter($books, fn($b) => $b['is_read'] == 1)) ?>
+                                        <?= $readCount; ?>
                                     </h3>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="icon icon-box-success">
+                                <div class="icon icon-box">
                                     <span class="mdi mdi-book-open icon-item"></span>
                                 </div>
                             </div>
                         </div>
-                        <h6 class="text-muted font-weight-normal">Books Read</h6>
+                        <h6 class="">Books Read</h6>
                     </div>
                 </div>
             </div>
             <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                <div class="card bg-danger text-white">
+                <div class="card bg-primary text-white">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-9">
                                 <div class="d-flex align-items-center align-self-start">
                                     <h3 class="mb-0">
-                                        <?= count(array_filter($books, fn($b) => $b['is_read'] == 0)) ?>
+                                        <?= $unreadCount; ?>
                                     </h3>
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="icon icon-box-danger">
+                                <div class="icon icon-box">
                                     <span class="mdi mdi-bookmark-off icon-item"></span>
                                 </div>
                             </div>
                         </div>
-                        <h6 class="text-muted font-weight-normal">Books Unread</h6>
+                        <h6 class="">Books Unread</h6>
                     </div>
                 </div>
             </div>
@@ -61,25 +81,11 @@ if ($books === false) {
             <div class="col-md-4 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="card-title">Transaction History</h4>
-                        <canvas id="transaction-history" class="transaction-chart"></canvas>
-                        <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                            <div class="text-md-center text-xl-left">
-                                <h6 class="mb-1">Transfer to Paypal</h6>
-                                <p class="text-muted mb-0">07 Jan 2019, 09:12AM</p>
-                            </div>
-                            <div class="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                                <h6 class="font-weight-bold mb-0">$236</h6>
-                            </div>
-                        </div>
-                        <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                            <div class="text-md-center text-xl-left">
-                                <h6 class="mb-1">Tranfer to Stripe</h6>
-                                <p class="text-muted mb-0">07 Jan 2019, 09:12AM</p>
-                            </div>
-                            <div class="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                                <h6 class="font-weight-bold mb-0">$593</h6>
-                            </div>
+                        <h4 class="card-title">Reading Status</h4>
+                        <canvas id="reading-status" class="transaction-chart"></canvas>
+                        <div class="text-center mt-3">
+                            <h6 class="mb-1">Books Read: <?= $readCount ?></h6>
+                            <h6 class="mb-1">Books Unread: <?= $unreadCount ?></h6>
                         </div>
                     </div>
                 </div>
@@ -88,158 +94,27 @@ if ($books === false) {
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex flex-row justify-content-between">
-                            <h4 class="card-title mb-1">Open Projects</h4>
-                            <p class="text-muted mb-1">Your data status</p>
+                            <h4 class="card-title mb-1">Buku Hari Ini</h4>
+                            <p class="text-muted mb-1"></p>
                         </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="preview-list">
+                        <div class="col-12">
+                            <div class="preview-list">
+                                <?php foreach ($limitedBooks as $book): ?>
                                     <div class="preview-item border-bottom">
                                         <div class="preview-thumbnail">
-                                            <div class="preview-icon bg-primary">
-                                                <i class="mdi mdi-file-document"></i>
+                                            <div class="preview-icon">
+                                                <img src="uploads/<?= htmlspecialchars($book['cover_path']) ?>" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">
                                             </div>
                                         </div>
                                         <div class="preview-item-content d-sm-flex flex-grow">
                                             <div class="flex-grow">
-                                                <h6 class="preview-subject">Admin dashboard design</h6>
-                                                <p class="text-muted mb-0">Broadcast web app mockup</p>
-                                            </div>
-                                            <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                                                <p class="text-muted">15 minutes ago</p>
-                                                <p class="text-muted mb-0">30 tasks, 5 issues </p>
+                                                <h6 class="preview-subject"><?= htmlspecialchars($book['title']) ?></h6>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="preview-item border-bottom">
-                                        <div class="preview-thumbnail">
-                                            <div class="preview-icon bg-success">
-                                                <i class="mdi mdi-cloud-download"></i>
-                                            </div>
-                                        </div>
-                                        <div class="preview-item-content d-sm-flex flex-grow">
-                                            <div class="flex-grow">
-                                                <h6 class="preview-subject">Wordpress Development</h6>
-                                                <p class="text-muted mb-0">Upload new design</p>
-                                            </div>
-                                            <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                                                <p class="text-muted">1 hour ago</p>
-                                                <p class="text-muted mb-0">23 tasks, 5 issues </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item border-bottom">
-                                        <div class="preview-thumbnail">
-                                            <div class="preview-icon bg-info">
-                                                <i class="mdi mdi-clock"></i>
-                                            </div>
-                                        </div>
-                                        <div class="preview-item-content d-sm-flex flex-grow">
-                                            <div class="flex-grow">
-                                                <h6 class="preview-subject">Project meeting</h6>
-                                                <p class="text-muted mb-0">New project discussion</p>
-                                            </div>
-                                            <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                                                <p class="text-muted">35 minutes ago</p>
-                                                <p class="text-muted mb-0">15 tasks, 2 issues</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item border-bottom">
-                                        <div class="preview-thumbnail">
-                                            <div class="preview-icon bg-danger">
-                                                <i class="mdi mdi-email-open"></i>
-                                            </div>
-                                        </div>
-                                        <div class="preview-item-content d-sm-flex flex-grow">
-                                            <div class="flex-grow">
-                                                <h6 class="preview-subject">Broadcast Mail</h6>
-                                                <p class="text-muted mb-0">Sent release details to team</p>
-                                            </div>
-                                            <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                                                <p class="text-muted">55 minutes ago</p>
-                                                <p class="text-muted mb-0">35 tasks, 7 issues </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item">
-                                        <div class="preview-thumbnail">
-                                            <div class="preview-icon bg-warning">
-                                                <i class="mdi mdi-chart-pie"></i>
-                                            </div>
-                                        </div>
-                                        <div class="preview-item-content d-sm-flex flex-grow">
-                                            <div class="flex-grow">
-                                                <h6 class="preview-subject">UI Design</h6>
-                                                <p class="text-muted mb-0">New application planning</p>
-                                            </div>
-                                            <div class="mr-auto text-sm-right pt-2 pt-sm-0">
-                                                <p class="text-muted">50 minutes ago</p>
-                                                <p class="text-muted mb-0">27 tasks, 4 issues </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <?php endforeach; ?>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4 grid-margin">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Revenue</h5>
-                        <div class="row">
-                            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-                                <div class="d-flex d-sm-block d-md-flex align-items-center">
-                                    <h2 class="mb-0">$32123</h2>
-                                    <p class="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
-                                </div>
-                                <h6 class="text-muted font-weight-normal">11.38% Since last month</h6>
-                            </div>
-                            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                                <i class="icon-lg mdi mdi-codepen text-primary ml-auto"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 grid-margin">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Sales</h5>
-                        <div class="row">
-                            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-                                <div class="d-flex d-sm-block d-md-flex align-items-center">
-                                    <h2 class="mb-0">$45850</h2>
-                                    <p class="text-success ml-2 mb-0 font-weight-medium">+8.3%</p>
-                                </div>
-                                <h6 class="text-muted font-weight-normal"> 9.61% Since last month</h6>
-                            </div>
-                            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                                <i class="icon-lg mdi mdi-wallet-travel text-danger ml-auto"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 grid-margin">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Purchase</h5>
-                        <div class="row">
-                            <div class="col-8 col-sm-12 col-xl-8 my-auto">
-                                <div class="d-flex d-sm-block d-md-flex align-items-center">
-                                    <h2 class="mb-0">$2039</h2>
-                                    <p class="text-danger ml-2 mb-0 font-weight-medium">-2.1% </p>
-                                </div>
-                                <h6 class="text-muted font-weight-normal">2.27% Since last month</h6>
-                            </div>
-                            <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                                <i class="icon-lg mdi mdi-monitor text-success ml-auto"></i>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -286,6 +161,40 @@ if ($books === false) {
     </div>
 </div>
 <script>
+    const ctx = document.getElementById('reading-status').getContext('2d');
+    const readingStatusChart = new Chart(ctx, {
+        type: 'pie', // You can change this to 'doughnut' for a doughnut chart
+        data: {
+            labels: ['Books Read', 'Books Unread'],
+            datasets: [{
+                label: 'Reading Status',
+                data: [<?= $readCount ?>, <?= $unreadCount ?>],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.6)', // Green for read books
+                    'rgba(220, 53, 69, 0.6)' // Red for unread books
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)', // Green border for read books
+                    'rgba(220, 53, 69, 1)' // Red border for unread books
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Books Reading Status'
+                }
+            }
+        }
+    });
+
     // Data indeks literasi
     const literacyData = [
         // Data literasi tinggi

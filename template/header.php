@@ -1,3 +1,35 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once("koneksi.php");
+
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+} else {
+    $username = 'Guest';
+}
+
+$id_user = $_SESSION['id_user'];
+
+$query = "SELECT pf_img FROM users WHERE id_user = '$id_user'";
+$result = mysqli_query($koneksi, $query);
+
+// Menetapkan gambar default
+$default_image = 'assets/images/aigis.jpg'; // Gambar default jika tidak ada gambar profil
+$pf_img = $default_image; // Awalnya set ke gambar default
+
+// Cek jika query berhasil
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    // Jika pf_img tidak kosong, gunakan gambar yang ada
+    if (!empty($row['pf_img'])) {
+        $pf_img = $row['pf_img'];
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +39,7 @@
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Corona Admin</title>
+    <title>Perpustakaan Digital</title>
     <!-- plugins:css -->
     <link
         rel="stylesheet"
@@ -34,19 +66,24 @@
     <link rel="stylesheet" href="assets/css/style.css" />
     <!-- End layout styles -->
     <link rel="shortcut icon" href="assets/images/favicon.png" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <style>
     /* Membuat background modal menjadi transparan dengan warna gelap */
     .modal-content {
-        background-color: rgba(0, 0, 0, 0.7); /* Warna hitam dengan transparansi 70% */
-        border-radius: 10px; /* Opsional: menambahkan sedikit rounded corner */
-        color: white; /* Menjadikan teks di dalam modal berwarna putih */
+        background-color: rgba(0, 0, 0, 0.7);
+        /* Warna hitam dengan transparansi 70% */
+        border-radius: 10px;
+        /* Opsional: menambahkan sedikit rounded corner */
+        color: white;
+        /* Menjadikan teks di dalam modal berwarna putih */
     }
 
     /* Mengubah latar belakang overlay modal */
     .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0.5); /* Overlay yang lebih gelap namun tetap transparan */
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Overlay yang lebih gelap namun tetap transparan */
     }
 </style>
 
@@ -65,123 +102,87 @@
                     <div class="profile-desc">
                         <div class="profile-pic">
                             <div class="count-indicator">
-                                <img
-                                    class="img-xs rounded-circle"
-                                    src="assets/images/aigis.jpg"
-                                    alt="" />
+                                <img class="img-xs rounded-circle" src="pf_img/<?= $pf_img; ?>" alt="Profile Image" />
                                 <span class="count bg-success"></span>
                             </div>
                             <div class="profile-name">
-                                <h5 class="mb-0 font-weight-normal">Aigis</h5>
-                                <span>Admin</span>
+                                <h5 class="mb-0 font-weight-normal"><?= $username; ?></h5>
+                                <span>Pengunjung</span>
                             </div>
-                        </div>
-                        <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
-                        <div
-                            class="dropdown-menu dropdown-menu-right sidebar-dropdown preview-list"
-                            aria-labelledby="profile-dropdown">
-                            <a href="#" class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-dark rounded-circle">
-                                        <i class="mdi mdi-settings text-primary"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content">
-                                    <p class="preview-subject ellipsis mb-1 text-small">
-                                        Account settings
-                                    </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-dark rounded-circle">
-                                        <i class="mdi mdi-onepassword text-info"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content">
-                                    <p class="preview-subject ellipsis mb-1 text-small">
-                                        Change Password
-                                    </p>
-                                </div>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item preview-item">
-                                <div class="preview-thumbnail">
-                                    <div class="preview-icon bg-dark rounded-circle">
-                                        <i class="mdi mdi-calendar-today text-success"></i>
-                                    </div>
-                                </div>
-                                <div class="preview-item-content">
-                                    <p class="preview-subject ellipsis mb-1 text-small">
-                                        To-do list
-                                    </p>
-                                </div>
-                            </a>
                         </div>
                     </div>
                 </li>
-                <li class="nav-item nav-category">
-                    <span class="nav-link">Navigation</span>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="index.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-speedometer"></i>
-                        </span>
-                        <span class="menu-title">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="list_buku.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-book"></i>
-                        </span>
-                        <span class="menu-title">List Buku</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="cart.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-cart"></i>
-                        </span>
-                        <span class="menu-title">Keranjang</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="buku_saya.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-book-open-page-variant"></i>
-                        </span>
-                        <span class="menu-title">Buku Saya</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="laporan.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-chart-bar"></i>
-                        </span>
-                        <span class="menu-title">Laporan</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a class="nav-link" href="riwayat_user.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi mdi-clock"></i>
-                        </span>
-                        <span class="menu-title">Riwayat User</span>
-                    </a>
-                </li>
-                <li class="nav-item menu-items">
-                    <a
-                        class="nav-link"
-                        href="users.php">
-                        <span class="menu-icon">
-                            <i class="mdi mdi-account"></i>
-                        </span>
-                        <span class="menu-title">Users</span>
-                    </a>
-                </li>
+
+                <?php if (isset($_SESSION['username'])) : ?>
+                    <li class="nav-item nav-category">
+                        <span class="nav-link">Navigation</span>
+                    </li>
+                    <li class="nav-item menu-items">
+                        <a class="nav-link" href="index.php">
+                            <span class="menu-icon">
+                                <i class="mdi mdi-speedometer"></i>
+                            </span>
+                            <span class="menu-title">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item menu-items">
+                        <a class="nav-link" href="list_buku.php">
+                            <span class="menu-icon">
+                                <i class="mdi mdi-book"></i>
+                            </span>
+                            <span class="menu-title">List Buku</span>
+                        </a>
+                    </li>
+
+                    <?php if ($_SESSION['role'] == 'users') : ?>
+                        <li class="nav-item menu-items">
+                            <a class="nav-link" href="cart.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi-cart"></i>
+                                </span>
+                                <span class="menu-title">Keranjang</span>
+                            </a>
+                        </li>
+                        <li class="nav-item menu-items">
+                            <a class="nav-link" href="buku_saya.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi-book-open-page-variant"></i>
+                                </span>
+                                <span class="menu-title">Buku Saya</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if ($_SESSION['role'] == 'admin') : ?>
+                        <li class="nav-item menu-items">
+                            <a class="nav-link" href="laporan.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi-chart-bar"></i>
+                                </span>
+                                <span class="menu-title">Laporan</span>
+                            </a>
+                        </li>
+                        <li class="nav-item menu-items">
+                            <a class="nav-link" href="riwayat_user.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi mdi-clock"></i>
+                                </span>
+                                <span class="menu-title">Riwayat User</span>
+                            </a>
+                        </li>
+                        <li class="nav-item menu-items">
+                            <a
+                                class="nav-link"
+                                href="users.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi-account"></i>
+                                </span>
+                                <span class="menu-title">Users</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                <?php endif; ?>
+
             </ul>
         </nav>
         <!-- partial -->
@@ -190,7 +191,7 @@
             <nav class="navbar p-0 fixed-top d-flex flex-row">
                 <div
                     class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
-                    <a class="xnavbar-brand brand-logo-mini" href="index.html"><img src="assets/images/logo-mini.svg" alt="logo" /></a>
+                    <a class="xnavbar-brand brand-logo-mini" href="index.php"><img src="assets/images/logo-mini.svg" alt="logo" /></a>
                 </div>
                 <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
                     <button
@@ -210,120 +211,6 @@
                         </li>
                     </ul>
                     <ul class="navbar-nav navbar-nav-right">
-                        <li class="nav-item dropdown d-none d-lg-block">
-                            <a
-                                class="nav-link btn btn-success create-new-button"
-                                id="createbuttonDropdown"
-                                data-toggle="dropdown"
-                                aria-expanded="false"
-                                href="#">+ Tambah Buku</a>
-                        </li>
-                        <li class="nav-item dropdown border-left">
-                            <a
-                                class="nav-link count-indicator dropdown-toggle"
-                                id="messageDropdown"
-                                href="#"
-                                data-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="mdi mdi-email"></i>
-                                <span class="count bg-success"></span>
-                            </a>
-                            <div
-                                class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
-                                aria-labelledby="messageDropdown">
-                                <h6 class="p-3 mb-0">Messages</h6>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <img
-                                            src="assets/images/faces/face4.jpg"
-                                            alt="image"
-                                            class="rounded-circle profile-pic" />
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject ellipsis mb-1">
-                                            Mark send you a message
-                                        </p>
-                                        <p class="text-muted mb-0">1 Minutes ago</p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <img
-                                            src="assets/images/faces/face2.jpg"
-                                            alt="image"
-                                            class="rounded-circle profile-pic" />
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject ellipsis mb-1">
-                                            Cregh send you a message
-                                        </p>
-                                        <p class="text-muted mb-0">15 Minutes ago</p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <img
-                                            src="assets/images/faces/face3.jpg"
-                                            alt="image"
-                                            class="rounded-circle profile-pic" />
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject ellipsis mb-1">
-                                            Profile picture updated
-                                        </p>
-                                        <p class="text-muted mb-0">18 Minutes ago</p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <p class="p-3 mb-0 text-center">4 new messages</p>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown border-left">
-                            <a
-                                class="nav-link count-indicator dropdown-toggle"
-                                id="notificationDropdown"
-                                href="#"
-                                data-toggle="dropdown">
-                                <i class="mdi mdi-bell"></i>
-                                <span class="count bg-danger"></span>
-                            </a>
-                            <div
-                                class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
-                                aria-labelledby="notificationDropdown">
-                                <h6 class="p-3 mb-0">Notifications</h6>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <div class="preview-icon bg-dark rounded-circle">
-                                            <i class="mdi mdi-calendar text-success"></i>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject mb-1">Buku Seru Hari ini</p>
-                                        <p class="text-muted ellipsis mb-0">
-                                            Rekomendasi Buku
-                                        </p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <div class="preview-icon bg-dark rounded-circle">
-                                            <i class="mdi mdi-settings text-danger"></i>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject mb-1">Settings</p>
-                                        <p class="text-muted ellipsis mb-0"></p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <p class="p-3 mb-0 text-center">See all notifications</p>
-                            </div>
-                        </li>
                         <li class="nav-item dropdown">
                             <a
                                 class="nav-link"
@@ -331,12 +218,9 @@
                                 href="#"
                                 data-toggle="dropdown">
                                 <div class="navbar-profile">
-                                    <img
-                                        class="img-xs rounded-circle"
-                                        src="assets/images/aigis.jpg"
-                                        alt="" />
+                                    <img class="img-xs rounded-circle" src="pf_img/<?= $pf_img; ?>" alt="Profile Image" />
                                     <p class="mb-0 d-none d-sm-block navbar-profile-name">
-                                        Aigis
+                                        <?= $username; ?>
                                     </p>
                                     <i class="mdi mdi-menu-down d-none d-sm-block"></i>
                                 </div>
@@ -346,18 +230,7 @@
                                 aria-labelledby="profileDropdown">
                                 <h6 class="p-3 mb-0">Profile</h6>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
-                                    <div class="preview-thumbnail">
-                                        <div class="preview-icon bg-dark rounded-circle">
-                                            <i class="mdi mdi-settings text-success"></i>
-                                        </div>
-                                    </div>
-                                    <div class="preview-item-content">
-                                        <p class="preview-subject mb-1">Settings</p>
-                                    </div>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item preview-item">
+                                <a class="dropdown-item preview-item" href="logout.php">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon bg-dark rounded-circle">
                                             <i class="mdi mdi-logout text-danger"></i>

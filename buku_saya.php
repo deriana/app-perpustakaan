@@ -8,6 +8,11 @@ if (!isset($_SESSION['id_user'])) {
     exit();
 }
 
+if ($_SESSION['role'] != 'users') {
+    header("Location: index.php");
+    exit();
+}
+
 include_once("template/header.php");
 require_once("function.php");
 
@@ -45,6 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+$query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, 
+                 br.is_read, br.is_favorite, br.borrow_date 
+          FROM borrows br
+          JOIN books b ON br.id_books = b.id_books
+          WHERE br.id_user = '$id_user' AND br.status = 'borrowed'";
 
 ?>
 <style>
@@ -140,10 +150,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="card-body">
                 <div class="book-container">
                     <?php
-                    $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, b.is_read, b.is_favorite, br.borrow_date 
-                              FROM borrows br
-                              JOIN books b ON br.id_books = b.id_books
-                              WHERE br.id_user = '$id_user' AND br.status = 'borrowed'";
+                    $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, 
+                            br.is_read, br.is_favorite, br.borrow_date 
+                            FROM borrows br
+                            JOIN books b ON br.id_books = b.id_books
+                            WHERE br.id_user = '$id_user' AND br.status = 'borrowed'";
+
+                    // Execute the query and display results
                     $borrowed_books = mysqli_query($koneksi, $query);
 
                     foreach ($borrowed_books as $buku): ?>
@@ -176,13 +189,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?php if ($buku['is_favorite']): ?>
                                     <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=0" class="btn btn-warning">
                                         Delete Fav
-                                </a>
+                                    </a>
                                 <?php else: ?>
                                     <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=1" class="btn btn-success">
                                         Favorite
-                                </a>
+                                    </a>
                                 <?php endif; ?>
-                                
+
                                 <!-- Tombol Kembalikan Buku -->
                                 <a href="kembalikan.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-danger">
                                     Kembalikan Buku

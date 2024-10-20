@@ -7,6 +7,7 @@ if (isset($_POST['login'])) {
     // Mengambil data dari form
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $remember = isset($_POST['remember']) ? true : false; // Menangkap opsi remember
 
     // Query untuk memeriksa user di database
     $result = mysqli_query($koneksi, "SELECT * FROM users WHERE user_name = '$username'");
@@ -19,6 +20,17 @@ if (isset($_POST['login'])) {
             // Set sesi
             $_SESSION['id_user'] = $row['id_user'];
             $_SESSION['username'] = $username;
+            $_SESSION['role'] = $row['role']; // Store the role in session
+
+            // Jika 'Remember Me' dicentang, simpan username di cookie
+            if ($remember) {
+                setcookie('username', $username, time() + (86400 * 30), "/"); // cookie valid selama 30 hari
+            } else {
+                // Hapus cookie jika tidak dicentang
+                if (isset($_COOKIE['username'])) {
+                    setcookie('username', '', time() - 3600, "/");
+                }
+            }
 
             // Redirect ke halaman index
             header("Location: index.php");
@@ -65,7 +77,7 @@ if (isset($_POST['login'])) {
                             <form action="" method="POST">
                                 <div class="form-group">
                                     <label>Username *</label>
-                                    <input type="text" class="form-control p_input" id="username" name="username" required>
+                                    <input type="text" class="form-control p_input" id="username" name="username" value="<?php echo isset($_COOKIE['username']) ? htmlspecialchars($_COOKIE['username']) : ''; ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Password *</label>
@@ -74,14 +86,14 @@ if (isset($_POST['login'])) {
                                 <div class="form-group d-flex align-items-center justify-content-between">
                                     <div class="form-check">
                                         <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input"> Remember me </label>
+                                            <input type="checkbox" class="form-check-input" name="remember"> Remember me
+                                        </label>
                                     </div>
-                                    <a href="#" class="forgot-pass">Forgot password</a>
                                 </div>
                                 <div class="text-center">
                                     <button type="submit" name="login" class="btn btn-primary btn-block enter-btn">Login</button>
                                 </div>
-                                <p class="sign-up">Don't have an Account?<a href="#"> Sign Up</a></p>
+                                <p class="sign-up">Don't have an Account?<a href="register.php"> Sign Up</a></p>
                             </form>
                         </div>
                     </div>

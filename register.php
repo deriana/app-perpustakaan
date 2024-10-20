@@ -2,29 +2,29 @@
 include_once("function.php");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  // Ambil data dari form
-  $username = $_POST['user_nama'];
-  $password = $_POST['user_pass'];
-  $confirm_password = $_POST['confirm_password'];
+    // Ambil data dari form
+    $username = $_POST['user_nama'];
+    $password = $_POST['user_pass'];
+    $confirm_password = $_POST['confirm_password'];
 
-  // Cek apakah password dan konfirmasi password sama
-  if ($password !== $confirm_password) {
-    echo "Password dan konfirmasi password tidak cocok!";
-  } else {
-    // Jika password cocok, lanjutkan proses registrasi
-    $data = [
-      'user_nama' => $username,
-      'user_pass' => $password
-    ];
-
-    if (register($data) > 0) {
-      echo "Register Berhasil";
-      header("Location: login.php");
-      exit;
+    // Cek apakah password dan konfirmasi password sama
+    if ($password !== $confirm_password) {
+        echo "Password dan konfirmasi password tidak cocok!";
     } else {
-      echo "Registrasi Gagal";
+        // Jika password cocok, lanjutkan proses registrasi
+        $data = [
+            'user_nama' => $username,
+            'user_pass' => $password
+        ];
+
+        if (register($data) > 0) {
+            echo "Register Berhasil";
+            header("Location: login.php");
+            exit;
+        } else {
+            echo "Registrasi Gagal";
+        }
     }
-  }
 }
 ?>
 
@@ -62,18 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <label>Confirm Password</label>
                                     <input type="password" class="form-control p_input" name="confirm_password" required>
                                 </div>
-                                <div class="form-group d-flex align-items-center justify-content-between">
-                                    <div class="form-check">
-                                        <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input"> Remember me </label>
-                                    </div>
-                                    <a href="#" class="forgot-pass">Forgot password</a>
-                                </div>
                                 <div class="text-center">
                                     <button type="submit" class="btn btn-primary btn-block enter-btn">Register</button>
                                 </div>
-                                <p class="sign-up text-center">Already have an Account?<a href="#"> Sign In</a></p>
-                                <p class="terms">By creating an account you are accepting our<a href="#"> Terms & Conditions</a></p>
+                                <p class="sign-up text-center">Already have an Account?<a href="login.php"> Sign In</a></p>
                             </form>
                         </div>
                     </div>

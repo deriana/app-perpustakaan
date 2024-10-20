@@ -127,11 +127,23 @@ function edit_buku($data)
 function hapus_buku($id)
 {
     global $koneksi;
-    $query = "DELETE FROM books WHERE id_books = '$id'";
-    mysqli_query($koneksi, $query);
+
+    // Hapus semua borrows terkait buku ini
+    $query_hapus_borrows = "DELETE FROM borrows WHERE id_books = '$id'";
+    mysqli_query($koneksi, $query_hapus_borrows);
+
+    // Hapus semua borrows terkait buku ini
+    $query_hapus_logs = "DELETE FROM activity_logs WHERE id_books = '$id'";
+    mysqli_query($koneksi, $query_hapus_logs);
+
+    // Hapus buku
+    $query_hapus_buku = "DELETE FROM books WHERE id_books = '$id'";
+    mysqli_query($koneksi, $query_hapus_buku);
 
     return mysqli_affected_rows($koneksi);
 }
+
+
 
 function pinjam_buku($id_user, $id_books)
 {
@@ -168,19 +180,27 @@ function kembalikan_buku($id_user, $id_books)
     return false;
 }
 
-function is_read($id_books, $is_read)
-{
+function is_read($id_books, $is_read) {
     global $koneksi;
-
-    $query = "UPDATE books set is_read = '$is_read' WHERE id_books = '$id_books'";
+    $id_user = $_SESSION['id_user']; 
+    $query = "UPDATE borrows SET is_read = " . ($is_read ? 'TRUE' : 'FALSE') . " 
+              WHERE id_user = '$id_user' AND id_books = '$id_books'";
 
     return mysqli_query($koneksi, $query);
 }
 
-function is_favorite($id_books, $is_favorite)
-{
+
+function is_favorite($id_books, $is_favorite) {
     global $koneksi;
-    $query = "UPDATE books set is_favorite = '$is_favorite' WHERE id_books = '$id_books'";
+    $id_user = $_SESSION['id_user']; // Get the logged-in user ID
+
+    if ($is_favorite) {
+        // Mark as favorite
+        $query = "UPDATE borrows SET is_favorite = TRUE WHERE id_user = '$id_user' AND id_books = '$id_books'";
+    } else {
+        // Unmark as favorite
+        $query = "UPDATE borrows SET is_favorite = FALSE WHERE id_user = '$id_user' AND id_books = '$id_books'";
+    }
 
     return mysqli_query($koneksi, $query);
 }
@@ -369,7 +389,8 @@ function hapus_user($id)
     return mysqli_affected_rows($koneksi);
 }
 
-function ganti_password($data) {
+function ganti_password($data)
+{
     global $koneksi;
 
     $id_user = htmlspecialchars($data['id_user']);

@@ -6,6 +6,11 @@ if (!isset($_SESSION['id_user'])) {
     exit();
 }
 
+if ($_SESSION['role'] != 'admin') {
+    header("Location: index.php");
+    exit();
+}
+
 include_once("template/header.php");
 require_once("function.php");
 include_once("koneksi.php");

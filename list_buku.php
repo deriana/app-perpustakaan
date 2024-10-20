@@ -161,10 +161,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-5">
-                    <h2 class="card-title mr-5">List Buku</h2>
-                    <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tambahBuku">Tambah Buku</button>
-                </div>
+                <?php if($_SESSION['role'] == 'admin') :?>
+                    <div class="d-flex align-items-center justify-content-between mb-5">
+                        <h2 class="card-title mr-5">List Buku</h2>
+                        <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tambahBuku">Tambah Buku</button>
+                    </div>
+                <?php endif; ?>
                 <div class="book-container">
                     <?php
                     $table_buku = query("SELECT * FROM books");
@@ -197,19 +199,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <?php else: ?>
                                         <span class="badge badge-warning">Sudah Di Pinjam Atau Di Keranjang</span>
                                     <?php endif; ?>
-
-                                <div>
-                                    <button class="btn btn-success btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#editBuku"
-                                        data-id="<?= htmlspecialchars($buku['id_books']); ?>"
-                                        data-title="<?= htmlspecialchars($buku['title']); ?>"
-                                        data-author="<?= htmlspecialchars($buku['author']); ?>"
-                                        data-synopsis="<?= htmlspecialchars($buku['synopsis']); ?>">
-                                        Edit Buku
-                                    </button>
-                                    <a onclick="return confirm('Apakah anda yakin ingin menghapus data ini ?')" class="btn btn-sm btn-danger" href="hapus_buku.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>">Hapus</a>
-                                </div>
+                                    
+                                <?php if($_SESSION['role'] == 'admin') :?>
+                                    <div>
+                                        <button class="btn btn-success btn-sm"
+                                            data-toggle="modal"
+                                            data-target="#editBuku"
+                                            data-id="<?= htmlspecialchars($buku['id_books']); ?>"
+                                            data-title="<?= htmlspecialchars($buku['title']); ?>"
+                                            data-author="<?= htmlspecialchars($buku['author']); ?>"
+                                            data-synopsis="<?= htmlspecialchars($buku['synopsis']); ?>">
+                                            Edit Buku
+                                        </button>
+                                        <a onclick="return confirm('Apakah anda yakin ingin menghapus data ini ?')" class="btn btn-sm btn-danger" href="hapus_buku.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>">Hapus</a>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
