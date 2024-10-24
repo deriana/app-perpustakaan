@@ -124,6 +124,8 @@ function edit_buku($data)
     return mysqli_affected_rows($koneksi);
 }
 
+
+
 function hapus_buku($id)
 {
     global $koneksi;
@@ -180,9 +182,10 @@ function kembalikan_buku($id_user, $id_books)
     return false;
 }
 
-function is_read($id_books, $is_read) {
+function is_read($id_books, $is_read)
+{
     global $koneksi;
-    $id_user = $_SESSION['id_user']; 
+    $id_user = $_SESSION['id_user'];
     $query = "UPDATE borrows SET is_read = " . ($is_read ? 'TRUE' : 'FALSE') . " 
               WHERE id_user = '$id_user' AND id_books = '$id_books'";
 
@@ -190,7 +193,8 @@ function is_read($id_books, $is_read) {
 }
 
 
-function is_favorite($id_books, $is_favorite) {
+function is_favorite($id_books, $is_favorite)
+{
     global $koneksi;
     $id_user = $_SESSION['id_user']; // Get the logged-in user ID
 

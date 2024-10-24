@@ -20,7 +20,9 @@ if (isset($_POST['login'])) {
             // Set sesi
             $_SESSION['id_user'] = $row['id_user'];
             $_SESSION['username'] = $username;
-            $_SESSION['role'] = $row['role']; // Store the role in session
+            $_SESSION['role'] = $row['role'];
+            $_SESSION['pf_img'] = $row['pf_img'];
+
 
             // Jika 'Remember Me' dicentang, simpan username di cookie
             if ($remember) {

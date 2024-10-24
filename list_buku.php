@@ -187,17 +187,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <h3>Date: <?= htmlspecialchars($buku['book_date']) ?></h3>
                                 </div>
                                 <p><?= htmlspecialchars($buku['synopsis']) ?></p>
-
-                                <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
-                                    <a href="tambah_cart.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-success btn-sm">Tambah ke Keranjang</a>
-                                <?php else: ?>
-                                    <span class="badge badge-warning">Sudah Di Keranjang</span>
-                                <?php endif; ?>
-
-                                <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
-                                    <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
+                                
+                                    <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
+                                        <a href="tambah_cart.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-success btn-sm">Tambah ke Keranjang</a>
                                     <?php else: ?>
-                                        <span class="badge badge-warning">Sudah Di Pinjam Atau Di Keranjang</span>
+                                        <span class="badge badge-warning">Sudah Di Keranjang</span>
+
+                                    <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
+                                        <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Sudah Di Pinjam Atau Di Keranjang</span>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                     
                                 <?php if($_SESSION['role'] == 'admin') :?>

@@ -52,7 +52,23 @@ $buku = query($sql_buku);
             <label for="tanggal_akhir">Tanggal Akhir</label>
             <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" value="<?= $tanggal_akhir ?>">
         </div>
+        
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
     </form>
+    <div class="d-flex g-10">
+        <div class="d-sm-flex align-items-center mb-4 mr-4">
+            <a href="export_excel.php?tanggal_awal=<?= $tanggal_awal ?>&tanggal_akhir=<?= $tanggal_akhir ?>" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm me-3">
+                <i class="fas fa-download fa-sm text-white-50"></i> Generate Report (Excel)
+            </a>
+        </div>
+        <div class="d-sm-flex align-items-center mb-4">
+            <a href="export_pdf.php?tanggal_awal=<?= $tanggal_awal ?>&tanggal_akhir=<?= $tanggal_akhir ?>" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+                <i class="fas fa-download fa-sm text-white-50"></i> Generate Report (PDF)
+            </a>
+        </div>
+    </div>
     <!-- Tabel aktivitas -->
     <table class="table table-bordered mt-4">
         <thead>

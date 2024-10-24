@@ -4,6 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 require_once("koneksi.php");
+require_once("function.php");
 
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
@@ -13,22 +14,13 @@ if (isset($_SESSION['username'])) {
 
 $id_user = $_SESSION['id_user'];
 
-$query = "SELECT pf_img FROM users WHERE id_user = '$id_user'";
-$result = mysqli_query($koneksi, $query);
-
-// Menetapkan gambar default
-$default_image = 'assets/images/aigis.jpg'; // Gambar default jika tidak ada gambar profil
-$pf_img = $default_image; // Awalnya set ke gambar default
-
-// Cek jika query berhasil
-if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
-    // Jika pf_img tidak kosong, gunakan gambar yang ada
-    if (!empty($row['pf_img'])) {
-        $pf_img = $row['pf_img'];
-    }
+if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
+    $pf_img = '' . $_SESSION['pf_img'];
+} else {
+    $pf_img = 'subaru.png';
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -87,7 +79,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 </style>
 
-
 <body>
     <div class="container-scroller">
         <!-- partial:partials/_sidebar.html -->
@@ -133,6 +124,14 @@ if ($result && mysqli_num_rows($result) > 0) {
                             <span class="menu-title">List Buku</span>
                         </a>
                     </li>
+                    <li class="nav-item menu-items">
+                        <a class="nav-link" href="riwayat_user.php">
+                            <span class="menu-icon">
+                                <i class="mdi mdi mdi-clock"></i>
+                            </span>
+                            <span class="menu-title">Riwayat User</span>
+                        </a>
+                    </li>
 
                     <?php if ($_SESSION['role'] == 'users') : ?>
                         <li class="nav-item menu-items">
@@ -160,14 +159,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                                     <i class="mdi mdi-chart-bar"></i>
                                 </span>
                                 <span class="menu-title">Laporan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item menu-items">
-                            <a class="nav-link" href="riwayat_user.php">
-                                <span class="menu-icon">
-                                    <i class="mdi mdi mdi-clock"></i>
-                                </span>
-                                <span class="menu-title">Riwayat User</span>
                             </a>
                         </li>
                         <li class="nav-item menu-items">
@@ -230,6 +221,18 @@ if ($result && mysqli_num_rows($result) > 0) {
                                 aria-labelledby="profileDropdown">
                                 <h6 class="p-3 mb-0">Profile</h6>
                                 <div class="dropdown-divider"></div>
+                                <!-- <a class="dropdown-item preview-item" href="#editProfile" data-toggle="modal"
+                                    data-target="#editProfile">
+                                    <div class="preview-thumbnail">
+                                        <div class="preview-icon bg-dark rounded-circle">
+                                            <i class="mdi mdi-account"></i>
+                                        </div>
+                                    </div>
+                                    <div class="preview-item-content">
+                                        <p class="preview-subject mb-1">Change Profile</p>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div> -->
                                 <a class="dropdown-item preview-item" href="logout.php">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon bg-dark rounded-circle">

@@ -109,6 +109,7 @@ $limitedBooks = array_slice($books, 0, 5);
                                         <div class="preview-item-content d-sm-flex flex-grow">
                                             <div class="flex-grow">
                                                 <h6 class="preview-subject"><?= htmlspecialchars($book['title']) ?></h6>
+                                                <h6 class="preview-subject"><?= htmlspecialchars($book['author']) ?></h6>
                                             </div>
                                         </div>
                                     </div>
