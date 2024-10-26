@@ -124,14 +124,6 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
                             <span class="menu-title">List Buku</span>
                         </a>
                     </li>
-                    <li class="nav-item menu-items">
-                        <a class="nav-link" href="riwayat_user.php">
-                            <span class="menu-icon">
-                                <i class="mdi mdi mdi-clock"></i>
-                            </span>
-                            <span class="menu-title">Riwayat User</span>
-                        </a>
-                    </li>
 
                     <?php if ($_SESSION['role'] == 'users') : ?>
                         <li class="nav-item menu-items">
@@ -148,6 +140,14 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
                                     <i class="mdi mdi-book-open-page-variant"></i>
                                 </span>
                                 <span class="menu-title">Buku Saya</span>
+                            </a>
+                        </li>
+                        <li class="nav-item menu-items">
+                            <a class="nav-link" href="riwayat_user.php">
+                                <span class="menu-icon">
+                                    <i class="mdi mdi mdi-clock"></i>
+                                </span>
+                                <span class="menu-title">Riwayat User</span>
                             </a>
                         </li>
                     <?php endif; ?>
@@ -221,8 +221,7 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
                                 aria-labelledby="profileDropdown">
                                 <h6 class="p-3 mb-0">Profile</h6>
                                 <div class="dropdown-divider"></div>
-                                <!-- <a class="dropdown-item preview-item" href="#editProfile" data-toggle="modal"
-                                    data-target="#editProfile">
+                                <!-- <a class="dropdown-item preview-item" href="edit_profile.php">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon bg-dark rounded-circle">
                                             <i class="mdi mdi-account"></i>
@@ -231,8 +230,8 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
                                     <div class="preview-item-content">
                                         <p class="preview-subject mb-1">Change Profile</p>
                                     </div>
-                                </a>
-                                <div class="dropdown-divider"></div> -->
+                                </a> -->
+                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item preview-item" href="logout.php">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon bg-dark rounded-circle">

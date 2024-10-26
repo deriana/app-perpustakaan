@@ -15,6 +15,11 @@ $id_user = $_SESSION['id_user']; // Ambil ID user dari session
 
 // Check if form is submitted
 
+$judul = isset($buku['judul']) ? $buku['judul'] : 'Judul Tidak Tersedia';
+$penulis = isset($buku['penulis']) ? $buku['penulis'] : 'Penulis Tidak Diketahui';
+$tanggal = isset($buku['tanggal']) ? $buku['tanggal'] : 'Tanggal Tidak Tersedia';
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle adding a book
     if (isset($_POST['simpan'])) {
@@ -22,11 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "<script>
                     alert('Data berhasil ditambahkan!');
                     document.location.href = 'list_buku.php'; // Redirect to the book list page
-                  </script>";
+                </script>";
         } else {
             echo "<script>
                     alert('Data gagal ditambahkan. Coba lagi!');
-                  </script>";
+                </script>";
         }
     }
 
@@ -36,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "<script>
                     alert('Data berhasil diperbarui!');
                     document.location.href = 'list_buku.php'; // Redirect ke halaman daftar buku
-                  </script>";
+                </script>";
         } else {
             echo "<script>
                     alert('Data gagal diperbarui. Coba lagi!');
-                  </script>";
+                </script>";
         }
     }
 
@@ -58,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 echo "<script>
                         alert('Buku berhasil ditambahkan ke keranjang!');
                         document.location.href = 'cart.php'; // Redirect ke halaman keranjang
-                      </script>";
+                    </script>";
             } else {
                 echo "<script>
                         alert('Gagal menambahkan buku ke keranjang. Coba lagi.');
-                      </script>";
+                    </script>";
             }
         }
     }
@@ -73,11 +78,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <style>
     .book-container {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        /* 2 kolom */
+        grid-template-columns: repeat(1, 1fr);
         gap: 20px;
-        /* Jarak antar item */
     }
+
+    @media (min-width: 576px) {
+
+        .book-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) {
+
+        .book-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+
+        .book-container {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
 
     .book-item {
         width: 250px;
@@ -86,8 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         border-radius: 20px;
         display: flex;
         flex-direction: row;
-        transition: 0.5s ease-in-out;
         overflow: hidden;
+        cursor: pointer;
+        transition: 0.5s;
     }
 
     .book-item>img {
@@ -99,17 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     .book-item:hover {
         transform: scale(1.1);
-        border-radius: 20px 50px 20px 20px;
-        width: 100%;
-
-        .book-desk {
-            display: block;
-            display: flex;
-            gap: 10px;
-            justify-content: space-around;
-            padding: 0 10px;
-            overflow: hidden;
-        }
+        background-color: transparent;
+        box-shadow: none;
     }
 
     .book-desk {
@@ -158,10 +175,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="main-panel m-4 d-flex flex-direction-column">
     <h1>Perpustakaan Digital</h1>
+
+    <!-- Search Bar -->
+    <div class="search-container mb-4">
+        <form action="" method="get" class="d-flex align-items-center">
+            <input type="text" name="search" placeholder="Cari berdasarkan judul atau penulis" class="form-control mr-2">
+            <button type="submit" class="btn btn-primary">Cari</button>
+            <a href="list_buku.php" class="btn btn-secondary ml-2">Reset</a>
+        </form>
+    </div>
+
+
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <?php if($_SESSION['role'] == 'admin') :?>
+                <?php if ($_SESSION['role'] == 'admin') : ?>
                     <div class="d-flex align-items-center justify-content-between mb-5">
                         <h2 class="card-title mr-5">List Buku</h2>
                         <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tambahBuku">Tambah Buku</button>
@@ -169,53 +197,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endif; ?>
                 <div class="book-container">
                     <?php
-                    $table_buku = query("SELECT * FROM books");
+                    $search_query = "";
+                    if (isset($_GET['search'])) {
+                        $search = htmlspecialchars($_GET['search']);
+                        $search_query = "WHERE title LIKE '%$search%' OR author LIKE '%$search%'";
+                    }
+                    $table_buku = query("SELECT * FROM books $search_query");
+
                     foreach ($table_buku as $buku):
                         // Cek apakah buku sudah dipinjam oleh user ini
                         $borrowed = query("SELECT * FROM borrows WHERE id_user = '$id_user' AND id_books = '$buku[id_books]' AND status = 'borrowed'");
                     ?>
-                        <div class="book-item">
-                            <img src="uploads/<?= htmlspecialchars($buku['cover_path']); ?>" alt="sampul buku">
-                            <div class="book-desk">
-                                <h1><?= htmlspecialchars($buku['title']) ?></h1>
-                                <div class="book-desk-item">
-                                    <i class="mdi mdi-grease-pencil"></i>
-                                    <h3>Author: <?= htmlspecialchars($buku['author']) ?></h3>
-                                </div>
-                                <div class="book-desk-item">
-                                    <i class="mdi mdi-calendar"></i>
-                                    <h3>Date: <?= htmlspecialchars($buku['book_date']) ?></h3>
-                                </div>
-                                <p><?= htmlspecialchars($buku['synopsis']) ?></p>
-                                
-                                    <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
-                                        <a href="tambah_cart.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-success btn-sm">Tambah ke Keranjang</a>
-                                    <?php else: ?>
-                                        <span class="badge badge-warning">Sudah Di Keranjang</span>
+                        <!-- Daftar Buku -->
+                        <div class="book-item"
+                            data-book-id="<?= isset($buku['id_books']) ? htmlspecialchars($buku['id_books']) : ''; ?>"
+                            data-book-title="<?= isset($buku['title']) ? htmlspecialchars($buku['title']) : 'Judul Tidak Tersedia'; ?>"
+                            data-author="<?= isset($buku['author']) ? htmlspecialchars($buku['author']) : 'Penulis Tidak Diketahui'; ?>"
+                            data-date="<?= isset($buku['book_date']) ? htmlspecialchars($buku['book_date']) : 'Tanggal Tidak Tersedia'; ?>"
+                            data-synopsis="<?= isset($buku['synopsis']) ? htmlspecialchars($buku['synopsis']) : 'Sinopsis Tidak Tersedia'; ?>"
+                            data-cover-path="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>"
+                            data-borrowed="<?= isset($borrowed) && empty($borrowed) ? 'false' : 'true'; ?>"
+                            data-in-cart="<?= isset($id_user) && is_already_in_cart($id_user, $buku['id_books']) ? 'true' : 'false'; ?>">
 
-                                    <?php if (empty($borrowed) && !is_already_in_cart($id_user, $buku['id_books'])): ?>
-                                        <a href="pinjam.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-primary">Pinjam Buku</a>
-                                        <?php else: ?>
-                                            <span class="badge badge-warning">Sudah Di Pinjam Atau Di Keranjang</span>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                    
-                                <?php if($_SESSION['role'] == 'admin') :?>
-                                    <div>
-                                        <button class="btn btn-success btn-sm"
-                                            data-toggle="modal"
-                                            data-target="#editBuku"
-                                            data-id="<?= htmlspecialchars($buku['id_books']); ?>"
-                                            data-title="<?= htmlspecialchars($buku['title']); ?>"
-                                            data-author="<?= htmlspecialchars($buku['author']); ?>"
-                                            data-synopsis="<?= htmlspecialchars($buku['synopsis']); ?>">
-                                            Edit Buku
-                                        </button>
-                                        <a onclick="return confirm('Apakah anda yakin ingin menghapus data ini ?')" class="btn btn-sm btn-danger" href="hapus_buku.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>">Hapus</a>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+                            <img src="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>" alt="sampul buku" style="max-width: 100%; height: auto;">
                         </div>
+
+
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -223,6 +230,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
+<!-- MODAL DETAIL BUKU -->
+<div class="modal fade" id="bookModal" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookModalLabel">Detail Buku</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalBookCover" src="" alt="Sampul Buku" style="width:100%; height:auto; margin-bottom: 15px;">
+                <h3 id="modalBookTitle"></h3>
+                <p><strong>Penulis:</strong> <span id="modalAuthor"></span></p>
+                <p><strong>Tanggal:</strong> <span id="modalDate"></span></p>
+                <p><strong>Sinopsis:</strong></p>
+                <p id="modalSynopsis"></p>
+
+                <!-- Tambahkan bagian ini untuk tombol keranjang -->
+                <div id="modalButtons" class="mt-4">
+                    <!-- Tombol Tambah ke Keranjang -->
+                    <a href="#" id="modalAddToCart" class="btn btn-success btn-sm mb-2">Tambah ke Keranjang</a>
+
+                    <!-- Tombol Pinjam Buku -->
+                    <a href="#" id="modalBorrowBook" class="btn btn-primary mb-2">Pinjam Buku</a>
+
+                    <!-- Status Buku -->
+                    <span id="modalBookStatus" class="badge badge-warning" style="display: none;">Sudah Di Keranjang atau Dipinjam</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- MODAL TAMBAH BUKU -->
 <div class="modal fade" id="tambahBuku" tabindex="-1" aria-labelledby="tambahBukuLabel" aria-hidden="true">
@@ -319,6 +362,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".book-item").forEach(function(item) {
+            item.addEventListener("click", function() {
+                const bookTitle = this.getAttribute("data-book-title");
+                const author = this.getAttribute("data-author");
+                const date = this.getAttribute("data-date");
+                const synopsis = this.getAttribute("data-synopsis");
+                const coverPath = this.getAttribute("data-cover-path");
+                const borrowed = this.getAttribute("data-borrowed") === 'true';
+                const inCart = this.getAttribute("data-in-cart") === 'true';
+
+                // Set data ke modal
+                document.getElementById("modalBookTitle").innerText = bookTitle;
+                document.getElementById("modalAuthor").innerText = author;
+                document.getElementById("modalDate").innerText = date;
+                document.getElementById("modalSynopsis").innerText = synopsis;
+                document.getElementById("modalBookCover").src = coverPath;
+
+                // Set URL untuk Tambah ke Keranjang dan Pinjam Buku
+                document.getElementById("modalAddToCart").href = `tambah_cart.php?id_books=${this.getAttribute("data-book-id")}`;
+                document.getElementById("modalBorrowBook").href = `pinjam.php?id_books=${this.getAttribute("data-book-id")}`;
+
+                // Tampilkan atau sembunyikan tombol berdasarkan status
+                if (borrowed || inCart) {
+                    document.getElementById("modalAddToCart").style.display = "none";
+                    document.getElementById("modalBorrowBook").style.display = "none";
+                    document.getElementById("modalBookStatus").style.display = "inline-block";
+                } else {
+                    document.getElementById("modalAddToCart").style.display = "inline-block";
+                    document.getElementById("modalBorrowBook").style.display = "inline-block";
+                    document.getElementById("modalBookStatus").style.display = "none";
+                }
+
+                // Tampilkan modal
+                $('#bookModal').modal('show');
+            });
+        });
+    });
+
+
+    function editBook(id) {
+        console.log("Edit Book ID:", id);
+    }
+
+    function deleteBook(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
+            window.location.href = `hapus_buku.php?id_books=${id}`;
+        }
+    }
+
+    function deleteBook(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
+            window.location.href = `hapus_buku.php?id_books=${id}`;
+        }
+    }
+
     function setEditBarang(id, title, author, synopsis) {
         document.getElementById('id_books').value = id;
         document.getElementById('edit_title').value = title;

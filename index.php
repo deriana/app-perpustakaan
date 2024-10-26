@@ -1,9 +1,7 @@
 <?php
 session_start();
 
-// Cek apakah pengguna sudah login atau belum
 if (!isset($_SESSION['id_user'])) {
-    // Jika pengguna belum login akan di direct ke login.php
     header("Location: login.php");
     exit();
 }
@@ -19,11 +17,9 @@ if ($books === false) {
     exit;
 }
 
-$id_user = $_SESSION['id_user']; // Get the logged-in user's ID
+$id_user = $_SESSION['id_user'];
 
-// Fetch only borrows for the logged-in user
 $borrows = query("SELECT * FROM borrows WHERE id_user = '$id_user'");
-
 
 $readCount = count(array_filter($borrows, fn($b) => $b['is_read'] == 1));
 $unreadCount = count(array_filter($borrows, fn($b) => $b['is_read'] == 0));
@@ -99,7 +95,10 @@ $limitedBooks = array_slice($books, 0, 5);
                         </div>
                         <div class="col-12">
                             <div class="preview-list">
-                                <?php foreach ($limitedBooks as $book): ?>
+                                <?php
+                                $books = query("SELECT * FROM books ORDER BY RAND() LIMIT 5");
+
+                                foreach ($books as $book): ?>
                                     <div class="preview-item border-bottom">
                                         <div class="preview-thumbnail">
                                             <div class="preview-icon">
@@ -115,25 +114,37 @@ $limitedBooks = array_slice($books, 0, 5);
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Indeks Literasi Negara</h4>
 
-                        <!-- Filter Dropdown -->
+                        <!-- Search Input -->
                         <div class="form-group">
+                            <label for="searchLiteracy">Search Country:</label>
+                            <input type="text" id="searchLiteracy" class="form-control" placeholder="Search by country..." oninput="filterTable()">
+                        </div>
+
+                        <!-- Filter Dropdown -->
+                        <!-- <div class="form-group">
                             <label for="filterLiteracy">Tampilkan Indeks:</label>
                             <select id="filterLiteracy" class="form-control" onchange="filterLiteracy()">
                                 <option value="high">Tinggi</option>
                                 <option value="low">Rendah</option>
                             </select>
+                        </div> -->
+
+                        <!-- Pagination Controls -->
+                        <div class="pagination mb-3">
+                            <button id="prevBtn" class="btn btn-secondary mr-2" onclick="changePage(-1)">Previous</button>
+                            <button id="nextBtn" class="btn btn-secondary" onclick="changePage(1)">Next</button>
                         </div>
 
                         <div class="row">
@@ -161,22 +172,23 @@ $limitedBooks = array_slice($books, 0, 5);
         </div>
     </div>
 </div>
+
 <script>
     const ctx = document.getElementById('reading-status').getContext('2d');
     const readingStatusChart = new Chart(ctx, {
-        type: 'pie', // You can change this to 'doughnut' for a doughnut chart
+        type: 'pie',
         data: {
             labels: ['Books Read', 'Books Unread'],
             datasets: [{
                 label: 'Reading Status',
                 data: [<?= $readCount ?>, <?= $unreadCount ?>],
                 backgroundColor: [
-                    'rgba(40, 167, 69, 0.6)', // Green for read books
-                    'rgba(220, 53, 69, 0.6)' // Red for unread books
+                    'rgba(40, 167, 69, 0.6)',
+                    'rgba(220, 53, 69, 0.6)'
                 ],
                 borderColor: [
-                    'rgba(40, 167, 69, 1)', // Green border for read books
-                    'rgba(220, 53, 69, 1)' // Red border for unread books
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(220, 53, 69, 1)'
                 ],
                 borderWidth: 1
             }]
@@ -198,99 +210,57 @@ $limitedBooks = array_slice($books, 0, 5);
 
     // Data indeks literasi
     const literacyData = [
-        // Data literasi tinggi
-        {
-            country: 'Finlandia',
-            value: 99.0,
-            flag: 'fi'
-        },
-        {
-            country: 'Jepang',
-            value: 99.2,
-            flag: 'jp'
-        },
-        {
-            country: 'Norwegia',
-            value: 98.8,
-            flag: 'no'
-        },
-        {
-            country: 'Korea Selatan',
-            value: 97.9,
-            flag: 'kr'
-        },
-        {
-            country: 'Jerman',
-            value: 99.0,
-            flag: 'de'
-        },
-        {
-            country: 'Amerika Serikat',
-            value: 99.0,
-            flag: 'us'
-        },
-        {
-            country: 'Australia',
-            value: 99.0,
-            flag: 'au'
-        },
-
-        // Data literasi rendah
-        {
-            country: 'Afghanistan',
-            value: 37.0,
-            flag: 'af'
-        },
-        {
-            country: 'Chad',
-            value: 36.0,
-            flag: 'td'
-        },
-        {
-            country: 'Niger',
-            value: 19.0,
-            flag: 'ne'
-        },
-        {
-            country: 'Sudan Selatan',
-            value: 27.0,
-            flag: 'ss'
-        },
-        {
-            country: 'Guinea',
-            value: 30.0,
-            flag: 'gn'
-        },
-        {
-            country: 'Mali',
-            value: 33.0,
-            flag: 'ml'
-        },
-        {
-            country: 'Burkina Faso',
-            value: 36.0,
-            flag: 'bf'
-        },
+        { country: 'Finlandia', value: 100.0, flag: 'fi' },
+        { country: 'Denmark', value: 100.0, flag: 'dk' },
+        { country: 'Norwegia', value: 100.0, flag: 'no' },
+        { country: 'Swedia', value: 100.0, flag: 'se' },
+        { country: 'Jepang', value: 99.0, flag: 'jp' },
+        { country: 'Korea Selatan', value: 99.0, flag: 'kr' },
+        { country: 'Jerman', value: 99.0, flag: 'de' },
+        { country: 'Kanada', value: 99.0, flag: 'ca' },
+        { country: 'Amerika Serikat', value: 99.0, flag: 'us' },
+        { country: 'Prancis', value: 99.0, flag: 'fr' },
+        { country: 'Belanda', value: 99.0, flag: 'nl' },
+        { country: 'Austria', value: 98.0, flag: 'at' },
+        { country: 'Australia', value: 99.0, flag: 'au' },
+        { country: 'Singapura', value: 97.0, flag: 'sg' },
+        { country: 'Malaysia', value: 94.0, flag: 'my' },
+        { country: 'Thailand', value: 93.0, flag: 'th' },
+        { country: 'Chile', value: 97.0, flag: 'cl' },
+        { country: 'Kolombia', value: 93.0, flag: 'co' },
+        { country: 'Meksiko', value: 93.0, flag: 'mx' },
+        { country: 'Turki', value: 95.0, flag: 'tr' },
+        { country: 'Brazil', value: 92.0, flag: 'br' },
+        { country: 'Argentina', value: 93.0, flag: 'ar' },
+        { country: 'Ekuador', value: 93.0, flag: 'ec' },
+        { country: 'Indonesia', value: 95.0, flag: 'id' },
+        { country: 'Filipina', value: 96.0, flag: 'ph' },
+        { country: 'Vietnam', value: 94.0, flag: 'vn' },
+        { country: 'India', value: 74.0, flag: 'in' },
+        { country: 'Bangladesh', value: 73.0, flag: 'bd' },
+        { country: 'Pakistan', value: 60.0, flag: 'pk' },
+        { country: 'Yaman', value: 56.0, flag: 'ye' },
+        { country: 'Afganistan', value: 38.0, flag: 'af' },
+        { country: 'Somalia', value: 37.0, flag: 'so' },
     ];
 
-    // Fungsi untuk memfilter dan menampilkan tabel berdasarkan pilihan pengguna
-    function filterLiteracy() {
-        const filterValue = document.getElementById('filterLiteracy').value;
+    const itemsPerPage = 10; // Items to display per page
+    let currentPage = 1; // Track current page
+    let filteredData = literacyData; // To store filtered data
+
+    function renderTable() {
         const tableBody = document.querySelector('#literacyTable tbody');
-        tableBody.innerHTML = ''; // Hapus semua baris dari tabel
+        tableBody.innerHTML = ''; // Clear existing rows
 
-        // Filter data berdasarkan pilihan
-        const filteredData = literacyData.filter(data => {
-            return (filterValue === 'high' && data.value >= 90) || (filterValue === 'low' && data.value < 90);
-        });
+        // Get start and end indices for pagination
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
 
-        // Mengurutkan data berdasarkan pilihan
-        filteredData.sort((a, b) => {
-            return filterValue === 'high' ? b.value - a.value : a.value - b.value;
-        });
+        // Slice the filtered data for the current page
+        const currentData = filteredData.slice(startIndex, endIndex);
 
-        // Tambahkan baris baru ke tabel
-        filteredData.forEach(data => {
+        // Populate the table with current data
+        currentData.forEach(data => {
             const newRow = tableBody.insertRow();
             const cell1 = newRow.insertCell(0);
             cell1.innerHTML = `<i class="flag-icon flag-icon-${data.flag}"></i> ${data.country}`;
@@ -298,10 +268,60 @@ $limitedBooks = array_slice($books, 0, 5);
             cell2.className = 'text-right';
             cell2.innerText = `${data.value}%`;
         });
+
+        updatePagination(filteredData.length);
     }
 
-    // Memanggil fungsi untuk menampilkan data saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', filterLiteracy);
+    function filterTable() {
+        const searchInput = document.getElementById('searchLiteracy').value.toLowerCase();
+        
+        // Filter the literacy data based on the search input
+        filteredData = literacyData.filter(item => item.country.toLowerCase().includes(searchInput));
+        
+        // Reset currentPage for filtered results
+        currentPage = 1; 
+        renderTable(); // Render the filtered table
+    }
+
+    function filterLiteracy() {
+        const filterValue = document.getElementById('filterLiteracy').value;
+
+        // Reset currentPage for filtered results
+        currentPage = 1;
+
+        if (filterValue === "high") {
+            filteredData = literacyData.filter(item => item.value >= 90); // Adjust threshold for "high"
+        } else if (filterValue === "low") {
+            filteredData = literacyData.filter(item => item.value < 90); // Adjust threshold for "low"
+        } else {
+            filteredData = literacyData; // Reset to all data
+        }
+
+        renderTable(); // Render the filtered table
+    }
+
+    function changePage(direction) {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        currentPage += direction;
+
+        // Ensure currentPage stays within bounds
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        renderTable(); // Render the table for the current page
+    }
+
+    function updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        document.getElementById("prevBtn").style.display = currentPage === 1 ? 'none' : 'inline';
+        document.getElementById("nextBtn").style.display = currentPage === totalPages ? 'none' : 'inline';
+    }
+
+    // Call renderTable on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTable(); // Initial render
+    });
 </script>
-<?php include_once("template/footer.php");
-?>
+
+
+<?php include_once("template/footer.php"); ?>

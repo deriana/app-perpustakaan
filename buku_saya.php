@@ -19,7 +19,6 @@ require_once("function.php");
 $id_user = $_SESSION['id_user']; // Ambil ID user dari session
 
 // Check if form is submitted
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle adding a book
     if (isset($_POST['simpan'])) {
@@ -60,43 +59,49 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
 <style>
     .book-container {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        /* 2 kolom */
+        grid-template-columns: repeat(1, 1fr);
         gap: 20px;
-        /* Jarak antar item */
+    }
+
+    @media (min-width: 576px) {
+
+        .book-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) {
+
+        .book-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+
+        .book-container {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
 
     .book-item {
         width: 250px;
         height: 350px;
-        background: white;
         border-radius: 20px;
         display: flex;
-        flex-direction: row;
         transition: 0.5s ease-in-out;
-        overflow: hidden;
-    }
-
-    .book-item>img {
-        width: 250px;
-        height: 350px;
-        border-radius: 20px;
-        object-fit: cover;
+        cursor: pointer;
     }
 
     .book-item:hover {
         transform: scale(1.1);
-        border-radius: 20px 50px 20px 20px;
-        width: 100%;
+    }
 
-        .book-desk {
-            display: block;
-            display: flex;
-            gap: 10px;
-            justify-content: space-around;
-            padding: 0 10px;
-            overflow: hidden;
-        }
+    .book-item>img {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px 20px 0 0;
+        object-fit: cover;
     }
 
     .book-desk {
@@ -106,40 +111,14 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
         justify-content: center;
         gap: 10px;
         flex-grow: 1;
+        padding: 10px;
     }
 
-    .book-desk-item {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        background-color: gray;
-        gap: 10px;
-        padding: 0 5px;
+    #modal-img {
+        width: 100%;
+        height: auto;
         border-radius: 10px;
-    }
-
-    .book-desk-item>i {
-        font-size: 20px;
-        color: white;
-    }
-
-    .book-desk-item>h3 {
-        font-size: 1em !important;
-    }
-
-    .book-desk>.book-desk-item>div {
-        width: 20px;
-        height: 20px;
-        background-color: white;
-        border-radius: 50%;
-    }
-
-    .book-desk {
-        display: none;
-    }
-
-    .book-desk>p {
-        overflow-y: auto;
+        margin-bottom: 15px;
     }
 </style>
 
@@ -148,59 +127,25 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
+
+                <div class="search-container mb-4">
+                    <form action="" method="get" class="d-flex align-items-center">
+                        <input type="text" name="search" placeholder="Cari berdasarkan judul atau penulis" class="form-control mr-2">
+                        <button type="submit" class="btn btn-primary">Cari</button>
+                        <a href="buku_saya.php" class="btn btn-secondary ml-2">Reset</a>
+                    </form>
+                </div>
+
                 <div class="book-container">
                     <?php
-                    $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, 
-                            br.is_read, br.is_favorite, br.borrow_date 
-                            FROM borrows br
-                            JOIN books b ON br.id_books = b.id_books
-                            WHERE br.id_user = '$id_user' AND br.status = 'borrowed'";
-
-                    // Execute the query and display results
                     $borrowed_books = mysqli_query($koneksi, $query);
 
                     foreach ($borrowed_books as $buku): ?>
-                        <div class="book-item">
+                        <div class="book-item" data-toggle="modal" data-target="#detailModal" data-title="<?= htmlspecialchars($buku['title']) ?>"
+                            data-author="<?= htmlspecialchars($buku['author']) ?>" data-borrow-date="<?= htmlspecialchars($buku['borrow_date']) ?>"
+                            data-synopsis="<?= htmlspecialchars($buku['synopsis']) ?>" data-id="<?= htmlspecialchars($buku['id_books']) ?>"
+                            data-cover-path="<?= htmlspecialchars($buku['cover_path']) ?>" data-is-read="<?= $buku['is_read'] ?>" data-is-favorite="<?= $buku['is_favorite'] ?>">
                             <img src="uploads/<?= htmlspecialchars($buku['cover_path']); ?>" alt="sampul buku">
-                            <div class="book-desk">
-                                <h1><?= htmlspecialchars($buku['title']) ?></h1>
-                                <div class="book-desk-item">
-                                    <i class="mdi mdi-grease-pencil"></i>
-                                    <h3>Author: <?= htmlspecialchars($buku['author']) ?></h3>
-                                </div>
-                                <div class="book-desk-item">
-                                    <i class="mdi mdi-calendar"></i>
-                                    <h3>Date Borrowed: <?= htmlspecialchars($buku['borrow_date']) ?></h3>
-                                </div>
-                                <p><?= htmlspecialchars($buku['synopsis']) ?></p>
-
-                                <!-- Tombol tandai sudah dibaca -->
-                                <?php if ($buku['is_read']): ?>
-                                    <a href="sudah_dibaca.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_read=0" class="btn btn-warning">
-                                        Tandai Belum Dibaca
-                                    </a>
-                                <?php else: ?>
-                                    <a href="sudah_dibaca.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_read=1" class="btn btn-success">
-                                        Tandai Sudah Dibaca
-                                    </a>
-                                <?php endif; ?>
-
-                                <!-- Tombol Buku Favorite -->
-                                <?php if ($buku['is_favorite']): ?>
-                                    <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=0" class="btn btn-warning">
-                                        Delete Fav
-                                    </a>
-                                <?php else: ?>
-                                    <a href="buku_fav.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>&is_favorite=1" class="btn btn-success">
-                                        Favorite
-                                    </a>
-                                <?php endif; ?>
-
-                                <!-- Tombol Kembalikan Buku -->
-                                <a href="kembalikan.php?id_books=<?= htmlspecialchars($buku['id_books']); ?>" class="btn btn-danger">
-                                    Kembalikan Buku
-                                </a>
-                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -209,4 +154,72 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
     </div>
 </div>
 
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">Detail Buku</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="modal-img" src="" alt="Gambar Buku">
+                <h3 id="modal-title"></h3>
+                <p id="modal-author"></p>
+                <p id="modal-borrow-date"></p>
+                <p id="modal-synopsis"></p>
+                <div id="modal-buttons">
+                    <a id="read-toggle" href="#" class="btn btn-primary mb-2"></a>
+                    <a id="favorite-toggle" href="#" class="btn btn-primary mb-2"></a>
+                </div>
+                <a id="return-button" href="#" class="btn btn-danger">Kembalikan Buku</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php include_once("template/footer.php"); ?>
+
+<script>
+    // Script untuk mengisi modal dengan detail buku
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookItems = document.querySelectorAll('.book-item');
+        const modalTitle = document.getElementById('modal-title');
+        const modalAuthor = document.getElementById('modal-author');
+        const modalBorrowDate = document.getElementById('modal-borrow-date');
+        const modalSynopsis = document.getElementById('modal-synopsis');
+        const modalImg = document.getElementById('modal-img');
+        const readToggle = document.getElementById('read-toggle');
+        const favoriteToggle = document.getElementById('favorite-toggle');
+        const returnButton = document.getElementById('return-button');
+
+        bookItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const title = item.getAttribute('data-title');
+                const author = item.getAttribute('data-author');
+                const borrowDate = item.getAttribute('data-borrow-date');
+                const synopsis = item.getAttribute('data-synopsis');
+                const bookId = item.getAttribute('data-id');
+                const coverPath = item.getAttribute('data-cover-path');
+                const isRead = item.getAttribute('data-is-read') === '1';
+                const isFavorite = item.getAttribute('data-is-favorite') === '1';
+
+                modalTitle.textContent = title;
+                modalAuthor.textContent = "Author: " + author;
+                modalBorrowDate.textContent = "Date Borrowed: " + borrowDate;
+                modalSynopsis.textContent = synopsis;
+                modalImg.src = `uploads/${coverPath}`; // Menetapkan sumber gambar di modal
+
+                // Set read toggle button
+                readToggle.textContent = isRead ? 'Tandai Belum Dibaca' : 'Tandai Sudah Dibaca';
+                readToggle.href = `sudah_dibaca.php?id_books=${bookId}&is_read=${isRead ? '0' : '1'}`;
+
+                // Set favorite toggle button
+                favoriteToggle.textContent = isFavorite ? 'Hapus Dari Favorit' : 'Tandai Sebagai Favorit';
+                favoriteToggle.href = `buku_fav.php?id_books=${bookId}&is_favorite=${isFavorite ? '0' : '1'}`;
+
+                // Set return button link
+                returnButton.href = `kembalikan.php?id_books=${bookId}`;
+            });
+        });
+    });
+</script>

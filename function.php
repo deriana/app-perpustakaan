@@ -408,3 +408,41 @@ function ganti_password($data)
 
     return mysqli_affected_rows($koneksi);
 }
+
+function edit_user($data)
+{
+    global $koneksi;
+
+    $id_user = htmlspecialchars($data['id_user']);
+    $username = htmlspecialchars($data["user_name"]);
+    $pf_img = '';
+
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $namaFile = $_FILES['foto']['name'];
+        $tmpName = $_FILES['foto']['tmp_name'];
+
+        $namaFileBaru = uniqid() . '_' . $namaFile;
+        $destination = "pf_img/" . $namaFileBaru;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+            $pf_img = $namaFileBaru;
+        } else {
+            die("Error: Failed to upload image.");
+        }
+    }
+
+    $query = "UPDATE users SET
+                user_name = '$username'";
+
+    if ($pf_img !== '') {
+        $query .= ", pf_img = '$pf_img'";
+    }
+
+    $query .= " WHERE id_user = '$id_user'";
+
+    if (!mysqli_query($koneksi, $query)) {
+        die("Error updating user: " . mysqli_error($koneksi));
+    }
+
+    return mysqli_affected_rows($koneksi);
+}

@@ -7,7 +7,6 @@ if (!isset($_SESSION['id_user'])) {
     exit();
 }
 
-
 if ($_SESSION['role'] != 'users') {
     header("Location: index.php");
     exit();
@@ -18,8 +17,14 @@ require_once("function.php");
 
 $id_user = $_SESSION['id_user']; // Ambil ID user dari session
 
-// Ambil buku-buku dalam keranjang
-$cart_books = query("SELECT b.*, c.id_cart FROM books b JOIN cart c ON b.id_books = c.id_books WHERE c.id_user = '$id_user'");
+// Ambil buku-buku dalam keranjang dengan opsi pencarian
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$query = "SELECT b.*, c.id_cart, br.borrow_date 
+          FROM books b 
+          JOIN cart c ON b.id_books = c.id_books 
+          LEFT JOIN borrows br ON b.id_books = br.id_books AND br.id_user = '$id_user' 
+          WHERE c.id_user = '$id_user' AND b.title LIKE '%$search%'";
+$cart_books = query($query);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Proses peminjaman buku
@@ -47,52 +52,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <style>
-    /* CSS Styling untuk tampilan keranjang buku */
-    .book-container {
+.book-container {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(1, 1fr);
         gap: 20px;
+    }
+
+    @media (min-width: 576px) {
+
+        .book-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) {
+
+        .book-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+
+        .book-container {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
     .book-item {
         width: 250px;
         height: 350px;
-        background: white;
         border-radius: 20px;
         display: flex;
         flex-direction: column;
+        transition: 0.5s;
         overflow: hidden;
+        cursor: pointer; /* Menambahkan kursor pointer */
     }
     .book-item > img {
-        width: 250px;
-        height: 350px;
+        width: 100%;
+        height: auto;
         border-radius: 20px;
         object-fit: cover;
     }
     .book-item:hover {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
-    .book-desk {
-        color: black;
-        padding: 10px;
+    .modal-body {
+        text-align: center;
     }
 </style>
 
 <div class="main-panel m-4 d-flex flex-direction-column">
     <h1>Keranjang Buku</h1>
 
+    <!-- Form Pencarian -->
+    <form method="GET" action="" class="mb-5">
+        <input type="text" name="search" placeholder="Cari buku..." value="<?= htmlspecialchars($search); ?>" class="form-control mb-3">
+        <button type="submit" class="btn btn-primary">Cari</button>
+        <a href="cart.php" class="btn btn-secondary ml-2">Reset</a>
+    </form>
+
     <?php if (count($cart_books) > 0): ?>
         <ul class="book-container">
             <?php foreach ($cart_books as $book): ?>
-                <li class="book-item">
+                <li class="book-item" data-toggle="modal" data-target="#bookModal" 
+                    data-title="<?= htmlspecialchars($book['title']); ?>" 
+                    data-author="<?= htmlspecialchars($book['author']); ?>" 
+                    data-borrow-date="<?= htmlspecialchars($book['borrow_date']); ?>" 
+                    data-synopsis="<?= htmlspecialchars($book['synopsis']); ?>" 
+                    data-cover="<?= htmlspecialchars($book['cover_path']); ?>" 
+                    data-id="<?= htmlspecialchars($book['id_books']); ?>" 
+                    data-cart-id="<?= htmlspecialchars($book['id_cart']); ?>">
                     <img src="uploads/<?= htmlspecialchars($book['cover_path']); ?>" alt="<?= htmlspecialchars($book['title']); ?>">
-                    <div class="book-desk">
-                        <h3><?= htmlspecialchars($book['title']); ?></h3>
-                        <p><?= htmlspecialchars($book['author']); ?></p>
-                        <form method="GET" action="hapus_cart.php" style="display:inline;">
-                            <input type="hidden" name="id_cart" value="<?= htmlspecialchars($book['id_cart']); ?>">
-                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                        </form>
-                    </div>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -104,5 +135,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>Keranjang Anda kosong.</p>
     <?php endif; ?>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="bookModal" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookModalLabel">Detail Buku</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modal-img" src="" alt="Gambar Buku" class="img-fluid"> <!-- Gambar Buku -->
+                <h3 id="modal-title"></h3>
+                <p id="modal-author"></p>
+                <p id="modal-borrow-date"></p>
+                <p id="modal-synopsis"></p>
+                <form id="return-form" method="GET" action="hapus_cart.php">
+                    <input type="hidden" name="id_cart" id="modal-cart-id" value="">
+                    <button type="submit" class="btn btn-danger">Kembalikan Buku</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Menampilkan detail buku di modal saat buku diklik
+    const bookItems = document.querySelectorAll('.book-item');
+
+    bookItems.forEach(item => {
+        item.addEventListener('click', () => {
+            document.getElementById('modal-img').src = 'uploads/' + item.getAttribute('data-cover');
+            document.getElementById('modal-title').textContent = item.getAttribute('data-title');
+            document.getElementById('modal-author').textContent = "Author: " + item.getAttribute('data-author');
+            document.getElementById('modal-borrow-date').textContent = "Tanggal Dipinjam: " + item.getAttribute('data-borrow-date');
+            document.getElementById('modal-synopsis').textContent = item.getAttribute('data-synopsis');
+            document.getElementById('modal-cart-id').value = item.getAttribute('data-cart-id'); // Set ID cart di modal
+        });
+    });
+</script>
 
 <?php include_once("template/footer.php"); ?>

@@ -60,11 +60,18 @@ if (isset($_POST['login'])) {
     <link rel="shortcut icon" href="assets/images/favicon.png" />
 </head>
 
+<style>
+    .background-page {
+        background-image: url("assets/background.jpg");
+        background-size: cover;
+    }
+</style>
+
 <body>
     <div class="container-scroller">
         <div class="container-fluid page-body-wrapper full-page-wrapper">
             <div class="row w-100 m-0">
-                <div class="content-wrapper full-page-wrapper d-flex align-items-center auth login-bg">
+                <div class="content-wrapper full-page-wrapper d-flex align-items-center auth background-page">
                     <div class="card col-lg-4 mx-auto">
                         <div class="card-body px-5 py-5">
                             <h3 class="card-title text-left mb-3">Login</h3>
