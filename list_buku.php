@@ -12,6 +12,7 @@ include_once("template/header.php");
 require_once("function.php");
 
 $id_user = $_SESSION['id_user']; // Ambil ID user dari session
+$role = $_SESSION['role'];
 
 // Check if form is submitted
 
@@ -72,8 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
-
-
 ?>
 <style>
     .book-container {
@@ -221,8 +220,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                             <img src="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>" alt="sampul buku" style="max-width: 100%; height: auto;">
                         </div>
-
-
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -230,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- MODAL DETAIL BUKU -->
+<!-- MODAL DETAIL BUKU-->
 <div class="modal fade" id="bookModal" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -248,24 +245,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p><strong>Sinopsis:</strong></p>
                 <p id="modalSynopsis"></p>
 
-                <!-- Tambahkan bagian ini untuk tombol keranjang -->
                 <div id="modalButtons" class="mt-4">
-                    <!-- Tombol Tambah ke Keranjang -->
                     <a href="#" id="modalAddToCart" class="btn btn-success btn-sm mb-2">Tambah ke Keranjang</a>
-
-                    <!-- Tombol Pinjam Buku -->
                     <a href="#" id="modalBorrowBook" class="btn btn-primary mb-2">Pinjam Buku</a>
-
-                    <!-- Status Buku -->
                     <span id="modalBookStatus" class="badge badge-warning" style="display: none;">Sudah Di Keranjang atau Dipinjam</span>
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-success btn-sm" id="modalEditBook"
+                        data-toggle="modal"
+                        data-target="#editBuku"
+                        data-id="<?= htmlspecialchars($buku['id_books']); ?>"
+                        data-title="<?= htmlspecialchars($buku['title']); ?>"
+                        data-author="<?= htmlspecialchars($buku['author']); ?>"
+                        data-synopsis="<?= htmlspecialchars($buku['synopsis']); ?>">
+                    Edit Buku
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="modalDeleteBook"
+                    onclick="deleteBook('<?= htmlspecialchars($buku['id_books']); ?>')">
+                    Hapus Buku
+                </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
 </div>
+
+
 
 <!-- MODAL TAMBAH BUKU -->
 <div class="modal fade" id="tambahBuku" tabindex="-1" aria-labelledby="tambahBukuLabel" aria-hidden="true">
@@ -365,6 +371,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll(".book-item").forEach(function(item) {
             item.addEventListener("click", function() {
+                // Ambil data buku
                 const bookTitle = this.getAttribute("data-book-title");
                 const author = this.getAttribute("data-author");
                 const date = this.getAttribute("data-date");
@@ -372,28 +379,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 const coverPath = this.getAttribute("data-cover-path");
                 const borrowed = this.getAttribute("data-borrowed") === 'true';
                 const inCart = this.getAttribute("data-in-cart") === 'true';
+                const id = this.getAttribute("data-book-id");
 
-                // Set data ke modal
+                // Mengatur detail modal buku
                 document.getElementById("modalBookTitle").innerText = bookTitle;
                 document.getElementById("modalAuthor").innerText = author;
                 document.getElementById("modalDate").innerText = date;
                 document.getElementById("modalSynopsis").innerText = synopsis;
                 document.getElementById("modalBookCover").src = coverPath;
 
-                // Set URL untuk Tambah ke Keranjang dan Pinjam Buku
-                document.getElementById("modalAddToCart").href = `tambah_cart.php?id_books=${this.getAttribute("data-book-id")}`;
-                document.getElementById("modalBorrowBook").href = `pinjam.php?id_books=${this.getAttribute("data-book-id")}`;
-
-                // Tampilkan atau sembunyikan tombol berdasarkan status
-                if (borrowed || inCart) {
+                // Set visibility based on role
+                if ('<?= $role ?>' === 'admin') {
                     document.getElementById("modalAddToCart").style.display = "none";
                     document.getElementById("modalBorrowBook").style.display = "none";
-                    document.getElementById("modalBookStatus").style.display = "inline-block";
+                    document.getElementById("modalEditBook").style.display = "inline-block";
+                    document.getElementById("modalDeleteBook").style.display = "inline-block";
                 } else {
-                    document.getElementById("modalAddToCart").style.display = "inline-block";
-                    document.getElementById("modalBorrowBook").style.display = "inline-block";
-                    document.getElementById("modalBookStatus").style.display = "none";
+                    document.getElementById("modalEditBook").style.display = "none";
+                    document.getElementById("modalDeleteBook").style.display = "none";
                 }
+
+                // Set tombol hapus
+                document.getElementById('modalDeleteBook').setAttribute('onclick', `deleteBook(${id})`);
 
                 // Tampilkan modal
                 $('#bookModal').modal('show');
@@ -401,16 +408,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         });
     });
 
-
-    function editBook(id) {
-        console.log("Edit Book ID:", id);
-    }
-
-    function deleteBook(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
-            window.location.href = `hapus_buku.php?id_books=${id}`;
-        }
-    }
 
     function deleteBook(id) {
         if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
@@ -436,8 +433,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         });
     });
 </script>
-
-
 
 <?php include_once("template/footer.php");
 ?>
