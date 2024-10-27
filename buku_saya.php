@@ -24,12 +24,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['simpan'])) {
         if (tambah_buku($_POST) > 0) {
             echo "<script>
-                    alert('Data berhasil ditambahkan!');
-                    document.location.href = 'list_buku.php'; // Redirect to the book list page
+                    Swal.fire({
+                        title: 'Buku berhasil ditambahkan!',
+                        icon: 'success',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    }).then(function() {
+                        document.location.href = 'list_buku.php'; // Redirect to the book list page
+                    });
                   </script>";
         } else {
             echo "<script>
-                    alert('Data gagal ditambahkan. Coba lagi!');
+                    Swal.fire({
+                        title: 'Buk gagal ditambahkan. Coba lagi!',
+                        icon: 'error',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
                   </script>";
         }
     }
@@ -38,16 +49,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['edit'])) {
         if (edit_buku($_POST) > 0) {
             echo "<script>
-                    alert('Data berhasil diperbarui!');
-                    document.location.href = 'list_buku.php'; // Redirect ke halaman daftar buku
+                    Swal.fire({
+                        title: 'Buku berhasil diperbarui!',
+                        icon: 'success',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    }).then(function() {
+                        document.location.href = 'list_buku.php'; // Redirect to the book list page
+                    });
                   </script>";
         } else {
             echo "<script>
-                    alert('Data gagal diperbarui. Coba lagi!');
+                    Swal.fire({
+                        title: 'Buku gagal diperbarui. Coba lagi!',
+                        icon: 'error',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
                   </script>";
         }
     }
 }
+
 
 $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path, 
                  br.is_read, br.is_favorite, br.borrow_date 

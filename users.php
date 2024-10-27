@@ -16,32 +16,75 @@ require_once("function.php");
 
 if (isset($_POST['tambah_user'])) {
     if (tambah_user($_POST) > 0) {
-        echo "<script>alert('User berhasil ditambahkan!');</script>";
-        echo "<script>window.location.href = 'users.php';</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'User berhasil ditambahkan!',
+                icon: 'success',
+                background: '#343a40',
+                color: '#ffffff'
+            }).then(function() {
+                window.location.href = 'users.php';
+            });
+          </script>";
     } else {
-        echo "<script>alert('Gagal menambahkan user');</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'Gagal menambahkan user',
+                icon: 'error',
+                background: '#343a40',
+                color: '#ffffff'
+            });
+          </script>";
     }
 }
 
 if (isset($_POST['ubah_user'])) {
     if (ubah_user($_POST) > 0) {
-        echo "<script>alert('User berhasil diubah!');</script>";
-        echo "<script>window.location.href = 'users.php';</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'User berhasil diubah!',
+                icon: 'success',
+                background: '#343a40',
+                color: '#ffffff'
+            }).then(function() {
+                window.location.href = 'users.php';
+            });
+          </script>";
     } else {
-        echo "<script>alert('Gagal mengubah user');</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'Gagal mengubah user',
+                icon: 'error',
+                background: '#343a40',
+                color: '#ffffff'
+            });
+          </script>";
     }
 }
 
 if (isset($_POST['simpan_password'])) {
     if (ganti_password($_POST) > 0) {
-        echo "<script>alert('Password berhasil diubah!');</script>";
-        echo "<script>window.location.href = 'users.php';</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'Password berhasil diubah!',
+                icon: 'success',
+                background: '#343a40',
+                color: '#ffffff'
+            }).then(function() {
+                window.location.href = 'users.php';
+            });
+          </script>";
     } else {
-        echo "<script>alert('Gagal mengubah password');</script>";
+        echo "<script>
+            Swal.fire({
+                title: 'Gagal mengubah password',
+                icon: 'error',
+                background: '#343a40',
+                color: '#ffffff'
+            });
+          </script>";
     }
 }
-
-
 ?>
 
 <div class="main-panel m-4">
@@ -54,7 +97,7 @@ if (isset($_POST['simpan_password'])) {
             <tr>
                 <th>No</th>
                 <th>Username</th>
-                <td>Profile Img</td>
+                <th>Profile Img</th>
                 <th>User Role</th>
                 <th>Aksi</th>
             </tr>
@@ -81,7 +124,7 @@ if (isset($_POST['simpan_password'])) {
                         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#gantiPassword" data-id="<?= $user['id_user'] ?>">Ganti Password</button>
                         <button type="button" class="btn btn-sm btn-info btn-edit-user"
                             data-toggle="modal"
-                            data-target="editUserModal"
+                            data-target="#editUserModal"
                             data-id="<?= $user['id_user']; ?>"
                             data-username="<?= $user['user_name']; ?>"
                             data-role="<?= $user['role']; ?>">
@@ -169,7 +212,7 @@ if (isset($_POST['simpan_password'])) {
                         <label for="edit_role">Role</label>
                         <select class="form-control" id="edit_role" name="role" required>
                             <option value="admin">Admin</option>
-                            <option value="users">User</option>
+                            <option value="user">User</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -182,7 +225,6 @@ if (isset($_POST['simpan_password'])) {
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="gantiPassword" tabindex="-1" aria-labelledby="gantiPasswordLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -201,21 +243,19 @@ if (isset($_POST['simpan_password'])) {
                         <div class="col-sm-7">
                             <input type="password" class="form-control" id="password" name="user_password" required>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Keluar</button>
-                            <button type="submit" class="btn btn-primary" name="simpan_password">Simpan</button>
-                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Keluar</button>
+                        <button type="submit" class="btn btn-primary" name="simpan_password">Simpan</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-
-
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
         $('#fotoModal').on('show.bs.modal', function(event) {
@@ -237,14 +277,12 @@ if (isset($_POST['simpan_password'])) {
             $('#editUserModal').modal('show'); // Ensure this matches your modal ID
         });
 
-
         // Event to open change password modal
         $('#gantiPassword').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget); // Tombol yang memicu modal
             var id = button.data('id'); // Ambil ID pengguna dari tombol
             $(this).find('.modal-body #id_users_password').val(id); // Set ID pengguna di modal ganti password
         });
-
     });
 </script>
 

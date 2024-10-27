@@ -19,10 +19,9 @@ $id_user = $_SESSION['id_user']; // Ambil ID user dari session
 
 // Ambil buku-buku dalam keranjang dengan opsi pencarian
 $search = isset($_GET['search']) ? $_GET['search'] : '';
-$query = "SELECT b.*, c.id_cart, br.borrow_date 
+$query = "SELECT b.*, c.id_cart 
           FROM books b 
           JOIN cart c ON b.id_books = c.id_books 
-          LEFT JOIN borrows br ON b.id_books = br.id_books AND br.id_user = '$id_user' 
           WHERE c.id_user = '$id_user' AND b.title LIKE '%$search%'";
 $cart_books = query($query);
 
@@ -30,7 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Proses peminjaman buku
     if (isset($_POST['borrow_books'])) {
         if (count($cart_books) == 0) {
-            echo "<script>alert('Keranjang kosong!');</script>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Keranjang kosong!',
+                        text: 'Silakan tambahkan buku ke keranjang.',
+                        icon: 'info',
+                        background: '#343a40', // Latar belakang abu-abu kehitaman
+                        color: '#ffffff' // Warna teks putih
+                    });
+                  </script>";
         } else {
             foreach ($cart_books as $book) {
                 // Periksa apakah buku sudah dipinjam
@@ -38,46 +45,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Tambahkan entri ke tabel peminjaman (borrows)
                     pinjam_buku($id_user, $book['id_books']);
                 } else {
-                    echo "<script>alert('Buku sudah dipinjam sebelumnya: " . htmlspecialchars($book['title']) . "');</script>";
+                    echo "<script>
+                            Swal.fire({
+                                title: 'Buku sudah dipinjam sebelumnya: " . htmlspecialchars($book['title']) . "',
+                                icon: 'info',
+                                background: '#343a40',
+                                color: '#ffffff'
+                            });
+                          </script>";
                 }
             }
-            // Setelah peminjaman selesai, hapus semua buku dari keranjang
             clear_cart($id_user);
-            echo "<script>alert('Peminjaman berhasil!');</script>";
-            header("Location: some_page_after_borrowing.php"); // Ganti dengan halaman yang sesuai
+            echo "<script>
+                    Swal.fire({
+                        title: 'Peminjaman berhasil!',
+                        icon: 'success',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    }).then(() => { window.location.href = 'buku_saya.php'; });
+                  </script>";
             exit();
         }
     }
 }
+
 ?>
 
 <style>
-.book-container {
+    .book-container {
         display: grid;
         grid-template-columns: repeat(1, 1fr);
         gap: 20px;
     }
 
     @media (min-width: 576px) {
-
         .book-container {
             grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (min-width: 768px) {
-
         .book-container {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
     @media (min-width: 992px) {
-
         .book-container {
             grid-template-columns: repeat(4, 1fr);
         }
     }
+
     .book-item {
         width: 250px;
         height: 350px;
@@ -86,17 +104,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flex-direction: column;
         transition: 0.5s;
         overflow: hidden;
-        cursor: pointer; /* Menambahkan kursor pointer */
+        cursor: pointer;
     }
-    .book-item > img {
+
+    .book-item>img {
         width: 100%;
         height: auto;
         border-radius: 20px;
         object-fit: cover;
     }
+
     .book-item:hover {
         transform: scale(1.1);
     }
+
     .modal-body {
         text-align: center;
     }
@@ -115,13 +136,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if (count($cart_books) > 0): ?>
         <ul class="book-container">
             <?php foreach ($cart_books as $book): ?>
-                <li class="book-item" data-toggle="modal" data-target="#bookModal" 
-                    data-title="<?= htmlspecialchars($book['title']); ?>" 
-                    data-author="<?= htmlspecialchars($book['author']); ?>" 
-                    data-borrow-date="<?= htmlspecialchars($book['borrow_date']); ?>" 
-                    data-synopsis="<?= htmlspecialchars($book['synopsis']); ?>" 
-                    data-cover="<?= htmlspecialchars($book['cover_path']); ?>" 
-                    data-id="<?= htmlspecialchars($book['id_books']); ?>" 
+                <li class="book-item" data-toggle="modal" data-target="#bookModal"
+                    data-title="<?= htmlspecialchars($book['title']); ?>"
+                    data-author="<?= htmlspecialchars($book['author']); ?>"
+                    data-synopsis="<?= htmlspecialchars($book['synopsis']); ?>"
+                    data-cover="<?= htmlspecialchars($book['cover_path']); ?>"
+                    data-id="<?= htmlspecialchars($book['id_books']); ?>"
                     data-cart-id="<?= htmlspecialchars($book['id_cart']); ?>">
                     <img src="uploads/<?= htmlspecialchars($book['cover_path']); ?>" alt="<?= htmlspecialchars($book['title']); ?>">
                 </li>
@@ -147,10 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </div>
             <div class="modal-body">
-                <img id="modal-img" src="" alt="Gambar Buku" class="img-fluid"> <!-- Gambar Buku -->
+                <img id="modal-img" src="" alt="Gambar Buku" class="img-fluid">
                 <h3 id="modal-title"></h3>
                 <p id="modal-author"></p>
-                <p id="modal-borrow-date"></p>
                 <p id="modal-synopsis"></p>
                 <form id="return-form" method="GET" action="hapus_cart.php">
                     <input type="hidden" name="id_cart" id="modal-cart-id" value="">
@@ -170,7 +189,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('modal-img').src = 'uploads/' + item.getAttribute('data-cover');
             document.getElementById('modal-title').textContent = item.getAttribute('data-title');
             document.getElementById('modal-author').textContent = "Author: " + item.getAttribute('data-author');
-            document.getElementById('modal-borrow-date').textContent = "Tanggal Dipinjam: " + item.getAttribute('data-borrow-date');
             document.getElementById('modal-synopsis').textContent = item.getAttribute('data-synopsis');
             document.getElementById('modal-cart-id').value = item.getAttribute('data-cart-id'); // Set ID cart di modal
         });

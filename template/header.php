@@ -59,6 +59,11 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
     <!-- End layout styles -->
     <link rel="shortcut icon" href="assets/images/favicon.png" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/SweetAlert/1.1.3/sweetalert.min.css">
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <style>
@@ -98,7 +103,6 @@ if (isset($_SESSION['pf_img']) && !empty($_SESSION['pf_img'])) {
                             </div>
                             <div class="profile-name">
                                 <h5 class="mb-0 font-weight-normal"><?= $username; ?></h5>
-                                <span>Pengunjung</span>
                             </div>
                         </div>
                     </div>

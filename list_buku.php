@@ -26,12 +26,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['simpan'])) {
         if (tambah_buku($_POST) > 0) {
             echo "<script>
-                    alert('Data berhasil ditambahkan!');
-                    document.location.href = 'list_buku.php'; // Redirect to the book list page
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Data berhasil ditambahkan!',
+                        icon: 'success',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    }).then(function() {
+                        window.location.href = 'list_buku.php'; // Redirect to the book list page
+                    });
                 </script>";
         } else {
             echo "<script>
-                    alert('Data gagal ditambahkan. Coba lagi!');
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Data gagal ditambahkan. Coba lagi!',
+                        icon: 'error',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
                 </script>";
         }
     }
@@ -40,12 +53,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['edit'])) {
         if (edit_buku($_POST) > 0) {
             echo "<script>
-                    alert('Data berhasil diperbarui!');
-                    document.location.href = 'list_buku.php'; // Redirect ke halaman daftar buku
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Data berhasil diperbarui!',
+                        icon: 'success',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    }).then(function() {
+                        window.location.href = 'list_buku.php'; // Redirect ke halaman daftar buku
+                    });
                 </script>";
         } else {
             echo "<script>
-                    alert('Data gagal diperbarui. Coba lagi!');
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: 'Data gagal diperbarui. Coba lagi!',
+                        icon: 'error',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
                 </script>";
         }
     }
@@ -55,19 +81,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Cek apakah buku sudah dipinjam
         if (is_already_borrowed($id_user, $id_books)) {
-            echo "<script>alert('Anda sudah meminjam buku ini!');</script>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Info!',
+                        text: 'Anda sudah meminjam buku ini!',
+                        icon: 'info',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
+                </script>";
         } elseif (is_already_in_cart($id_user, $id_books)) {
             // Cek apakah buku sudah ada di keranjang
-            echo "<script>alert('Buku ini sudah ada di keranjang!');</script>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Info!',
+                        text: 'Buku ini sudah ada di keranjang!',
+                        icon: 'info',
+                        background: '#343a40',
+                        color: '#ffffff'
+                    });
+                </script>";
         } else {
             if (add_to_cart($id_user, $id_books)) {
                 echo "<script>
-                        alert('Buku berhasil ditambahkan ke keranjang!');
-                        document.location.href = 'cart.php'; // Redirect ke halaman keranjang
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Buku berhasil ditambahkan ke keranjang!',
+                            icon: 'success',
+                            background: '#343a40',
+                            color: '#ffffff'
+                        }).then(function() {
+                            window.location.href = 'cart.php'; // Redirect ke halaman keranjang
+                        });
                     </script>";
             } else {
                 echo "<script>
-                        alert('Gagal menambahkan buku ke keranjang. Coba lagi.');
+                        Swal.fire({
+                            title: 'Gagal!',
+                            text: 'Gagal menambahkan buku ke keranjang. Coba lagi.',
+                            icon: 'error',
+                            background: '#343a40',
+                            color: '#ffffff'
+                        });
                     </script>";
             }
         }
@@ -206,6 +261,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     foreach ($table_buku as $buku):
                         // Cek apakah buku sudah dipinjam oleh user ini
                         $borrowed = query("SELECT * FROM borrows WHERE id_user = '$id_user' AND id_books = '$buku[id_books]' AND status = 'borrowed'");
+                        $inCart = is_already_in_cart($id_user, $buku['id_books']);
+                        $unavailable = !empty($borrowed) || $inCart;
                     ?>
                         <!-- Daftar Buku -->
                         <div class="book-item"
@@ -216,7 +273,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             data-synopsis="<?= isset($buku['synopsis']) ? htmlspecialchars($buku['synopsis']) : 'Sinopsis Tidak Tersedia'; ?>"
                             data-cover-path="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>"
                             data-borrowed="<?= isset($borrowed) && empty($borrowed) ? 'false' : 'true'; ?>"
-                            data-in-cart="<?= isset($id_user) && is_already_in_cart($id_user, $buku['id_books']) ? 'true' : 'false'; ?>">
+                            data-in-cart="<?= $inCart ? 'true' : 'false'; ?>"
+                            data-unavailable="<?= $unavailable ? 'true' : 'false'; ?>">
 
                             <img src="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>" alt="sampul buku" style="max-width: 100%; height: auto;">
                         </div>
@@ -369,66 +427,73 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll(".book-item").forEach(function(item) {
-        item.addEventListener("click", function() {
-            // Ambil data buku
-            const bookTitle = this.getAttribute("data-book-title");
-            const author = this.getAttribute("data-author");
-            const date = this.getAttribute("data-date");
-            const synopsis = this.getAttribute("data-synopsis");
-            const coverPath = this.getAttribute("data-cover-path");
-            const borrowed = this.getAttribute("data-borrowed") === 'true';
-            const inCart = this.getAttribute("data-in-cart") === 'true';
-            const id = this.getAttribute("data-book-id");
+        document.querySelectorAll(".book-item").forEach(function(item) {
+            item.addEventListener("click", function() {
+                // Ambil data buku
+                const bookTitle = this.getAttribute("data-book-title");
+                const author = this.getAttribute("data-author");
+                const date = this.getAttribute("data-date");
+                const synopsis = this.getAttribute("data-synopsis");
+                const coverPath = this.getAttribute("data-cover-path");
+                const unavailable = this.getAttribute("data-unavailable") === 'true'; // Ambil status unavailable
+                const id = this.getAttribute("data-book-id");
 
-            // Mengatur detail modal buku
-            document.getElementById("modalBookTitle").innerText = bookTitle;
-            document.getElementById("modalAuthor").innerText = author;
-            document.getElementById("modalDate").innerText = date;
-            document.getElementById("modalSynopsis").innerText = synopsis;
-            document.getElementById("modalBookCover").src = coverPath;
+                // Mengatur detail modal buku
+                document.getElementById("modalBookTitle").innerText = bookTitle;
+                document.getElementById("modalAuthor").innerText = author;
+                document.getElementById("modalDate").innerText = date;
+                document.getElementById("modalSynopsis").innerText = synopsis;
+                document.getElementById("modalBookCover").src = coverPath;
 
-            // Set visibility based on role
-            if ('<?= $role ?>' === 'admin') {
-                document.getElementById("modalAddToCart").style.display = "none";
-                document.getElementById("modalBorrowBook").style.display = "none";
-                document.getElementById("modalEditBook").style.display = "inline-block";
-                document.getElementById("modalDeleteBook").style.display = "inline-block";
-            } else {
-                document.getElementById("modalEditBook").style.display = "none";
-                document.getElementById("modalDeleteBook").style.display = "none";
-            }
+                if ('<?= $role ?>' === 'admin') {
+                    document.getElementById("modalAddToCart").style.display = "none";
+                    document.getElementById("modalBorrowBook").style.display = "none";
+                    document.getElementById("modalEditBook").style.display = "inline-block";
+                    document.getElementById("modalDeleteBook").style.display = "inline-block";
+                } else {
+                    document.getElementById("modalEditBook").style.display = "none";
+                    document.getElementById("modalDeleteBook").style.display = "none";
+                }
 
-            // Set tombol hapus
-            document.getElementById('modalDeleteBook').setAttribute('onclick', `deleteBook(${id})`);
+                // Set tombol "Tambah ke Keranjang"
+                const addToCartButton = document.querySelector('.add-to-cart');
+                addToCartButton.setAttribute('data-id', id);
 
-            // Set ID untuk tombol "Tambah ke Keranjang"
-            const addToCartButton = document.querySelector('.add-to-cart');
-            addToCartButton.setAttribute('data-id', id); // Mengatur ID yang tepat
+                // Set tombol "Pinjam Buku"
+                const borrowButton = document.querySelector('.add-to-borrow');
+                borrowButton.setAttribute('data-id', id);
 
-            // Set ID untuk tombol "Pinjam Buku"
-            const borrowButton = document.querySelector('.add-to-borrow');
-            borrowButton.setAttribute('data-id', id); // Mengatur ID yang tepat
+                // Nonaktifkan tombol jika buku tidak tersedia
+                if (unavailable) {
+                    addToCartButton.innerText = "Sudah Di Keranjang"; // Ganti teks tombol
+                    addToCartButton.classList.add('disabled'); // Tambahkan kelas disabled
+                    addToCartButton.setAttribute('disabled', true); // Nonaktifkan tombol
 
-            // Tampilkan modal
-            $('#bookModal').modal('show');
+                    borrowButton.innerText = "Sudah Dipinjam"; // Ganti teks tombol
+                    borrowButton.classList.add('disabled'); // Tambahkan kelas disabled
+                    borrowButton.setAttribute('disabled', true); // Nonaktifkan tombol
+                }
+
+                // Tampilkan modal
+                $('#bookModal').modal('show');
+            });
+        });
+
+        // Event listener untuk tombol "Tambah ke Keranjang"
+        document.querySelector('.add-to-cart').addEventListener('click', function(event) {
+            event.preventDefault();
+            const bookId = this.getAttribute('data-id');
+            window.location.href = `tambah_cart.php?id_books=${bookId}`;
+        });
+
+        // Event listener untuk tombol "Pinjam Buku"
+        document.querySelector('.add-to-borrow').addEventListener('click', function(event) {
+            event.preventDefault();
+            const bookId = this.getAttribute('data-id');
+            window.location.href = `pinjam.php?id_books=${bookId}`;
         });
     });
 
-    // Event listener untuk tombol "Tambah ke Keranjang"
-    document.querySelector('.add-to-cart').addEventListener('click', function(event) {
-        event.preventDefault(); 
-        const bookId = this.getAttribute('data-id'); // Mengambil ID dari tombol
-        window.location.href = `tambah_cart.php?id_books=${bookId}`; // Mengarahkan ke halaman
-    });
-
-    // Event listener untuk tombol "Pinjam Buku"
-    document.querySelector('.add-to-borrow').addEventListener('click', function(event) {
-        event.preventDefault();
-        const bookId = this.getAttribute('data-id'); // Mengambil ID dari tombol
-        window.location.href = `pinjam.php?id_books=${bookId}`; // Mengarahkan ke halaman peminjaman
-    });
-});
 
     function deleteBook(id) {
         if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
