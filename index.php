@@ -102,8 +102,15 @@ $limitedBooks = array_slice($books, 0, 5);
                                     <div class="preview-item border-bottom">
                                         <div class="preview-thumbnail">
                                             <div class="preview-icon">
-                                                <img src="uploads/<?= htmlspecialchars($book['cover_path']) ?>" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">
-                                            </div>
+                                                <?php
+                                                $coverPath = "uploads/" . htmlspecialchars($book['cover_path']);
+
+                                                if (file_exists($coverPath) && !empty($book['cover_path'])) {
+                                                    echo '<img src="' . $coverPath . '" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">';
+                                                } else {
+                                                    echo "<img src='" . htmlspecialchars($book['cover_path']) . "' alt='" . htmlspecialchars($book['title']) . "'>";
+                                                }
+                                                ?> </div>
                                         </div>
                                         <div class="preview-item-content d-sm-flex flex-grow">
                                             <div class="flex-grow">
@@ -209,39 +216,166 @@ $limitedBooks = array_slice($books, 0, 5);
     });
 
     // Data indeks literasi
-    const literacyData = [
-        { country: 'Finlandia', value: 100.0, flag: 'fi' },
-        { country: 'Denmark', value: 100.0, flag: 'dk' },
-        { country: 'Norwegia', value: 100.0, flag: 'no' },
-        { country: 'Swedia', value: 100.0, flag: 'se' },
-        { country: 'Jepang', value: 99.0, flag: 'jp' },
-        { country: 'Korea Selatan', value: 99.0, flag: 'kr' },
-        { country: 'Jerman', value: 99.0, flag: 'de' },
-        { country: 'Kanada', value: 99.0, flag: 'ca' },
-        { country: 'Amerika Serikat', value: 99.0, flag: 'us' },
-        { country: 'Prancis', value: 99.0, flag: 'fr' },
-        { country: 'Belanda', value: 99.0, flag: 'nl' },
-        { country: 'Austria', value: 98.0, flag: 'at' },
-        { country: 'Australia', value: 99.0, flag: 'au' },
-        { country: 'Singapura', value: 97.0, flag: 'sg' },
-        { country: 'Malaysia', value: 94.0, flag: 'my' },
-        { country: 'Thailand', value: 93.0, flag: 'th' },
-        { country: 'Chile', value: 97.0, flag: 'cl' },
-        { country: 'Kolombia', value: 93.0, flag: 'co' },
-        { country: 'Meksiko', value: 93.0, flag: 'mx' },
-        { country: 'Turki', value: 95.0, flag: 'tr' },
-        { country: 'Brazil', value: 92.0, flag: 'br' },
-        { country: 'Argentina', value: 93.0, flag: 'ar' },
-        { country: 'Ekuador', value: 93.0, flag: 'ec' },
-        { country: 'Indonesia', value: 95.0, flag: 'id' },
-        { country: 'Filipina', value: 96.0, flag: 'ph' },
-        { country: 'Vietnam', value: 94.0, flag: 'vn' },
-        { country: 'India', value: 74.0, flag: 'in' },
-        { country: 'Bangladesh', value: 73.0, flag: 'bd' },
-        { country: 'Pakistan', value: 60.0, flag: 'pk' },
-        { country: 'Yaman', value: 56.0, flag: 'ye' },
-        { country: 'Afganistan', value: 38.0, flag: 'af' },
-        { country: 'Somalia', value: 37.0, flag: 'so' },
+    const literacyData = [{
+            country: 'Finlandia',
+            value: 100.0,
+            flag: 'fi'
+        },
+        {
+            country: 'Denmark',
+            value: 100.0,
+            flag: 'dk'
+        },
+        {
+            country: 'Norwegia',
+            value: 100.0,
+            flag: 'no'
+        },
+        {
+            country: 'Swedia',
+            value: 100.0,
+            flag: 'se'
+        },
+        {
+            country: 'Jepang',
+            value: 99.0,
+            flag: 'jp'
+        },
+        {
+            country: 'Korea Selatan',
+            value: 99.0,
+            flag: 'kr'
+        },
+        {
+            country: 'Jerman',
+            value: 99.0,
+            flag: 'de'
+        },
+        {
+            country: 'Kanada',
+            value: 99.0,
+            flag: 'ca'
+        },
+        {
+            country: 'Amerika Serikat',
+            value: 99.0,
+            flag: 'us'
+        },
+        {
+            country: 'Prancis',
+            value: 99.0,
+            flag: 'fr'
+        },
+        {
+            country: 'Belanda',
+            value: 99.0,
+            flag: 'nl'
+        },
+        {
+            country: 'Austria',
+            value: 98.0,
+            flag: 'at'
+        },
+        {
+            country: 'Australia',
+            value: 99.0,
+            flag: 'au'
+        },
+        {
+            country: 'Singapura',
+            value: 97.0,
+            flag: 'sg'
+        },
+        {
+            country: 'Malaysia',
+            value: 94.0,
+            flag: 'my'
+        },
+        {
+            country: 'Thailand',
+            value: 93.0,
+            flag: 'th'
+        },
+        {
+            country: 'Chile',
+            value: 97.0,
+            flag: 'cl'
+        },
+        {
+            country: 'Kolombia',
+            value: 93.0,
+            flag: 'co'
+        },
+        {
+            country: 'Meksiko',
+            value: 93.0,
+            flag: 'mx'
+        },
+        {
+            country: 'Turki',
+            value: 95.0,
+            flag: 'tr'
+        },
+        {
+            country: 'Brazil',
+            value: 92.0,
+            flag: 'br'
+        },
+        {
+            country: 'Argentina',
+            value: 93.0,
+            flag: 'ar'
+        },
+        {
+            country: 'Ekuador',
+            value: 93.0,
+            flag: 'ec'
+        },
+        {
+            country: 'Indonesia',
+            value: 95.0,
+            flag: 'id'
+        },
+        {
+            country: 'Filipina',
+            value: 96.0,
+            flag: 'ph'
+        },
+        {
+            country: 'Vietnam',
+            value: 94.0,
+            flag: 'vn'
+        },
+        {
+            country: 'India',
+            value: 74.0,
+            flag: 'in'
+        },
+        {
+            country: 'Bangladesh',
+            value: 73.0,
+            flag: 'bd'
+        },
+        {
+            country: 'Pakistan',
+            value: 60.0,
+            flag: 'pk'
+        },
+        {
+            country: 'Yaman',
+            value: 56.0,
+            flag: 'ye'
+        },
+        {
+            country: 'Afganistan',
+            value: 38.0,
+            flag: 'af'
+        },
+        {
+            country: 'Somalia',
+            value: 37.0,
+            flag: 'so'
+        },
     ];
 
     const itemsPerPage = 10; // Items to display per page
@@ -274,12 +408,12 @@ $limitedBooks = array_slice($books, 0, 5);
 
     function filterTable() {
         const searchInput = document.getElementById('searchLiteracy').value.toLowerCase();
-        
+
         // Filter the literacy data based on the search input
         filteredData = literacyData.filter(item => item.country.toLowerCase().includes(searchInput));
-        
+
         // Reset currentPage for filtered results
-        currentPage = 1; 
+        currentPage = 1;
         renderTable(); // Render the filtered table
     }
 

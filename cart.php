@@ -143,8 +143,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     data-cover="<?= htmlspecialchars($book['cover_path']); ?>"
                     data-id="<?= htmlspecialchars($book['id_books']); ?>"
                     data-cart-id="<?= htmlspecialchars($book['id_cart']); ?>">
-                    <img src="uploads/<?= htmlspecialchars($book['cover_path']); ?>" alt="<?= htmlspecialchars($book['title']); ?>">
-                </li>
+
+                    <?php
+                    $coverPath = 'uploads/' . htmlspecialchars($book['cover_path']);
+
+                    if (file_exists($coverPath) && !empty($book['cover_path'])) {
+                        echo "<img src='$coverPath' alt='" . htmlspecialchars($book['title']) . "'>";
+                    } else {
+                        echo "<img src='" . htmlspecialchars($book['cover_path']) . "' alt='" . htmlspecialchars($book['title']) . "'>";
+                    }
+                    ?>
+                    </li>
             <?php endforeach; ?>
         </ul>
 

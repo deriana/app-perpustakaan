@@ -246,7 +246,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php if ($_SESSION['role'] == 'admin') : ?>
                     <div class="d-flex align-items-center justify-content-between mb-5">
                         <h2 class="card-title mr-5">List Buku</h2>
-                        <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tambahBuku">Tambah Buku</button>
+                        <div>
+                            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tambahBuku">Tambah Buku</button>
+                            <a href="list_buku_api.php" class="btn btn-success btn-lg">Add From API</a>
+                        </div>
                     </div>
                 <?php endif; ?>
                 <div class="book-container">
@@ -271,12 +274,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             data-author="<?= isset($buku['author']) ? htmlspecialchars($buku['author']) : 'Penulis Tidak Diketahui'; ?>"
                             data-date="<?= isset($buku['book_date']) ? htmlspecialchars($buku['book_date']) : 'Tanggal Tidak Tersedia'; ?>"
                             data-synopsis="<?= isset($buku['synopsis']) ? htmlspecialchars($buku['synopsis']) : 'Sinopsis Tidak Tersedia'; ?>"
-                            data-cover-path="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>"
+                            data-cover-path="<?= (file_exists('uploads/' . htmlspecialchars($buku['cover_path'])) && !empty($buku['cover_path'])) ?
+                                                    'uploads/' . htmlspecialchars($buku['cover_path']) :
+                                                    htmlspecialchars($buku['cover_path']); ?>"
                             data-borrowed="<?= isset($borrowed) && empty($borrowed) ? 'false' : 'true'; ?>"
                             data-in-cart="<?= $inCart ? 'true' : 'false'; ?>"
                             data-unavailable="<?= $unavailable ? 'true' : 'false'; ?>">
 
-                            <img src="uploads/<?= isset($buku['cover_path']) ? htmlspecialchars($buku['cover_path']) : 'default.jpg'; ?>" alt="sampul buku" style="max-width: 100%; height: auto;">
+                            <?php
+                            $coverPath = 'uploads/' . htmlspecialchars($buku['cover_path']);
+
+                            if (file_exists($coverPath) && !empty($buku['cover_path'])) {
+                                echo "<img src='$coverPath' alt='" . htmlspecialchars($buku['title']) . "'>";
+                            } else {
+                                echo "<img src='" . htmlspecialchars($buku['cover_path']) . "' alt='" . htmlspecialchars($buku['title']) . "'>";
+                            }
+                            ?>
                         </div>
                     <?php endforeach; ?>
                 </div>

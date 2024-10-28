@@ -167,8 +167,20 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
                         <div class="book-item" data-toggle="modal" data-target="#detailModal" data-title="<?= htmlspecialchars($buku['title']) ?>"
                             data-author="<?= htmlspecialchars($buku['author']) ?>" data-borrow-date="<?= htmlspecialchars($buku['borrow_date']) ?>"
                             data-synopsis="<?= htmlspecialchars($buku['synopsis']) ?>" data-id="<?= htmlspecialchars($buku['id_books']) ?>"
-                            data-cover-path="<?= htmlspecialchars($buku['cover_path']) ?>" data-is-read="<?= $buku['is_read'] ?>" data-is-favorite="<?= $buku['is_favorite'] ?>">
-                            <img src="uploads/<?= htmlspecialchars($buku['cover_path']); ?>" alt="sampul buku">
+                            data-cover-path="<?= (file_exists(htmlspecialchars($buku['cover_path'])) && !empty($buku['cover_path'])) ?
+                                                    'uploads/' . htmlspecialchars($buku['cover_path']) :
+                                                    htmlspecialchars($buku['cover_path']); ?>" 
+                            data-is-read="<?= $buku['is_read'] ?>"
+                            data-is-favorite="<?= $buku['is_favorite'] ?>">
+                            <?php
+                            $coverPath = 'uploads/' . htmlspecialchars($buku['cover_path']);
+
+                            if (file_exists($coverPath) && !empty($buku['cover_path'])) {
+                                echo "<img src='$coverPath' alt='" . htmlspecialchars($buku['title']) . "'>";
+                            } else {
+                                echo "<img src='" . htmlspecialchars($buku['cover_path']) . "' alt='" . htmlspecialchars($buku['title']) . "'>";
+                            }
+                            ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -230,17 +242,25 @@ $query = "SELECT b.id_books, b.title, b.author, b.synopsis, b.cover_path,
                 modalAuthor.textContent = "Author: " + author;
                 modalBorrowDate.textContent = "Date Borrowed: " + borrowDate;
                 modalSynopsis.textContent = synopsis;
-                modalImg.src = `uploads/${coverPath}`; // Menetapkan sumber gambar di modal
 
-                // Set read toggle button
+                const localCoverPath = `uploads/${coverPath}`; 
+                modalImg.src = localCoverPath; 
+
+                const img = new Image();
+                img.src = localCoverPath;
+                img.onload = function() {
+                    modalImg.src = localCoverPath; 
+                };
+                img.onerror = function() {
+                    modalImg.src = coverPath; 
+                };
+
                 readToggle.textContent = isRead ? 'Tandai Belum Dibaca' : 'Tandai Sudah Dibaca';
                 readToggle.href = `sudah_dibaca.php?id_books=${bookId}&is_read=${isRead ? '0' : '1'}`;
 
-                // Set favorite toggle button
                 favoriteToggle.textContent = isFavorite ? 'Hapus Dari Favorit' : 'Tandai Sebagai Favorit';
                 favoriteToggle.href = `buku_fav.php?id_books=${bookId}&is_favorite=${isFavorite ? '0' : '1'}`;
 
-                // Set return button link
                 returnButton.href = `kembalikan.php?id_books=${bookId}`;
             });
         });
