@@ -270,28 +270,32 @@ function log_activity($id_user, $activity_type, $id_books)
     return mysqli_query($koneksi, $query);
 }
 
-function get_activity_logs($id_user, $activity_type = '', $start_date = '', $end_date = '')
+function get_borrow_logs($id_user, $start_date = '', $end_date = '', $status_pengembalian = '')
 {
     global $koneksi;
 
-    $query = "SELECT al.*, u.user_name, b.title
-              FROM activity_logs al
-              JOIN users u ON al.id_user = u.id_user
-              JOIN books b ON al.id_books = b.id_books
-              WHERE al.id_user = '$id_user'";
-
-    if (!empty($activity_type)) {
-        $query .= "AND al.activity_type = '$activity_type'";
-    }
+    $query = "SELECT br.*, u.user_name, b.title, br.borrow_date, br.return_date
+              FROM borrows br
+              JOIN users u ON br.id_user = u.id_user
+              JOIN books b ON br.id_books = b.id_books
+              WHERE br.id_user = '$id_user'";
 
     if (!empty($start_date) && !empty($end_date)) {
-        $query .= "AND al.timestamp BETWEEN '$start_date' AND '$end_date'";
+        $query .= " AND br.borrow_date BETWEEN '$start_date' AND '$end_date'";
     }
 
-    $query .= "ORDER BY al.timestamp DESC";
+    // Filter status pengembalian
+    if ($status_pengembalian === 'dikembalikan') {
+        $query .= " AND br.return_date IS NOT NULL";
+    } elseif ($status_pengembalian === 'belum_dikembalikan') {
+        $query .= " AND br.return_date IS NULL";
+    }
+
+    $query .= " ORDER BY br.borrow_date DESC";
 
     return query($query);
 }
+
 
 function tambah_user($data)
 {

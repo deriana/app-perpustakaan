@@ -140,13 +140,13 @@ $limitedBooks = array_slice($books, 0, 5);
                         </div>
 
                         <!-- Filter Dropdown -->
-                        <!-- <div class="form-group">
+                        <div class="form-group">
                             <label for="filterLiteracy">Tampilkan Indeks:</label>
                             <select id="filterLiteracy" class="form-control" onchange="filterLiteracy()">
                                 <option value="high">Tinggi</option>
                                 <option value="low">Rendah</option>
                             </select>
-                        </div> -->
+                        </div>
 
                         <!-- Pagination Controls -->
                         <div class="pagination mb-3">
