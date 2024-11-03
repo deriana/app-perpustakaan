@@ -58,14 +58,17 @@ if (isset($_GET['search'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
+    // Atur book_date menjadi tanggal saat ini
+    $bookDate = date('Y-m-d'); // Format sesuai kebutuhan Anda
+
     $stmt = $koneksi->prepare("INSERT INTO books(title, author, synopsis, cover_path, book_date) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $_POST['title'], $_POST['author'], $_POST['synopsis'], $_POST['cover_path'], $_POST['book_date']);
+    $stmt->bind_param("sssss", $_POST['title'], $_POST['author'], $_POST['synopsis'], $_POST['cover_path'], $bookDate);
 
     if ($stmt->execute()) {
         echo "<script>
         Swal.fire({
             title: 'Berhasil!',
-            text: 'Buku Berhasil Ditambahkan Ke Db',
+            text: 'Buku Berhasil Ditambahkan Ke Database',
             icon: 'success',
             background: '#343a40',
             color: '#ffffff'
@@ -75,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
         echo "<script>
         Swal.fire({
             title: 'Gagal!',
-            text: 'Buku Gagal Ditambahkan Ke Db',
+            text: 'Buku Gagal Ditambahkan Ke Database',
             icon: 'error',
             background: '#343a40',
             color: '#ffffff'
@@ -85,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
 
     $stmt->close();
 }
-
 ?>
 <style>
     .book-container {
@@ -150,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
     }
 </style>
 <div class="main-panel m-4">
-    <h1>Book From Api</h1>
+    <h1>Buku Dari API</h1>
 
     <div class="search-container mb-4">
         <form action="" method="GET" class="d-flex align-items-center">
@@ -198,7 +200,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
                             <input type="hidden" name="author" value="<?= $item['author'] ?? '' ?>">
                             <input type="hidden" name="synopsis" value="<?= $item['synopsis'] ?? '' ?>">
                             <input type="hidden" name="cover_path" value="<?= $item['cover_path'] ?? '' ?>">
-                            <input type="hidden" name="book_date" value="<?= $item['book_date'] ?? '' ?>">
+                            <!-- Hapus baris ini -->
+                            <!-- <input type="hidden" name="book_date" value="<?= $item['book_date'] ?? '' ?>"> -->
                             <button type="submit" class="btn btn-primary btn-sm mb-2" name="save_book">Simpan Ke Database</button>
                         </form>
                     </div>
@@ -238,16 +241,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'])) {
                 document.querySelector('input[name="author"]').value = author;
                 document.querySelector('input[name="synopsis"]').value = synopsis;
                 document.querySelector('input[name="cover_path"]').value = coverPath;
-                document.querySelector('input[name="book_date"]').value = date;
 
-                // Menampilkan modal
                 $('#bookModal').modal('show');
             });
         });
     });
 </script>
-
-
 <?php
 include_once("template/footer.php");
 ?>

@@ -87,39 +87,80 @@ $limitedBooks = array_slice($books, 0, 5);
                 </div>
             </div>
             <div class="col-md-8 grid-margin stretch-card">
-                <div class="card">
+                <div class="card d-flex">
                     <div class="card-body">
                         <div class="d-flex flex-row justify-content-between">
-                            <h4 class="card-title mb-1">Buku Hari Ini</h4>
-                            <p class="text-muted mb-1"></p>
+                            <h4 class="card-title mb-1">Buku</h4>
+                            <div>
+                                <button id="btnToday" class="btn btn-primary" onclick="showToday()">Hari Ini</button>
+                                <button id="btnFavorite" class="btn btn-secondary" onclick="showFavorite()">Favorit</button>
+                            </div>
                         </div>
                         <div class="col-12">
-                            <div class="preview-list">
-                                <?php
-                                $books = query("SELECT * FROM books ORDER BY RAND() LIMIT 5");
-
-                                foreach ($books as $book): ?>
-                                    <div class="preview-item border-bottom">
-                                        <div class="preview-thumbnail">
-                                            <div class="preview-icon">
-                                                <?php
-                                                $coverPath = "uploads/" . htmlspecialchars($book['cover_path']);
-
-                                                if (file_exists($coverPath) && !empty($book['cover_path'])) {
-                                                    echo '<img src="' . $coverPath . '" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">';
-                                                } else {
-                                                    echo "<img src='" . htmlspecialchars($book['cover_path']) . "' alt='" . htmlspecialchars($book['title']) . "'>";
-                                                }
-                                                ?> </div>
-                                        </div>
-                                        <div class="preview-item-content d-sm-flex flex-grow">
-                                            <div class="flex-grow">
-                                                <h6 class="preview-subject"><?= htmlspecialchars($book['title']) ?></h6>
-                                                <h6 class="preview-subject"><?= htmlspecialchars($book['author']) ?></h6>
+                            <div class="preview-list" id="bookList">
+                                <!-- Books for Today -->
+                                <div id="todayBooks">
+                                    <?php
+                                    $books = query("SELECT * FROM books ORDER BY RAND() LIMIT 5");
+                                    foreach ($books as $book): ?>
+                                        <div class="preview-item border-bottom">
+                                            <div class="preview-thumbnail">
+                                                <div class="preview-icon">
+                                                    <?php
+                                                    $coverPath = "uploads/" . htmlspecialchars($book['cover_path']);
+                                                    if (file_exists($coverPath) && !empty($book['cover_path'])) {
+                                                        echo '<img src="' . $coverPath . '" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">';
+                                                    } else {
+                                                        echo "<img src='" . htmlspecialchars($book['cover_path']) . "' alt='" . htmlspecialchars($book['title']) . "'>";
+                                                    }
+                                                    ?>
+                                                </div>
+                                            </div>
+                                            <div class="preview-item-content d-sm-flex flex-grow">
+                                                <div class="flex-grow">
+                                                    <h6 class="preview-subject"><?= htmlspecialchars($book['title']) ?></h6>
+                                                    <h6 class="preview-subject"><?= htmlspecialchars($book['author']) ?></h6>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
+
+                                <!-- Books for Favorite -->
+                                <div id="favoriteBooks" style="display: none;">
+                                    <?php
+                                    $favorite = query("
+                            SELECT books.title, books.author, books.cover_path, COUNT(borrows.id_books) AS favorite_count 
+                            FROM borrows
+                            JOIN books ON books.id_books = borrows.id_books
+                            WHERE borrows.is_favorite = true
+                            GROUP BY borrows.id_books
+                            ORDER BY favorite_count DESC 
+                            LIMIT 5
+                        ");
+                                    foreach ($favorite as $book): ?>
+                                        <div class="preview-item border-bottom">
+                                            <div class="preview-thumbnail">
+                                                <div class="preview-icon">
+                                                    <?php
+                                                    $coverPath = isset($book['cover_path']) && file_exists("uploads/" . $book['cover_path'])
+                                                        ? "uploads/" . htmlspecialchars($book['cover_path'])
+                                                        : htmlspecialchars($book['cover_path']);
+
+                                                    echo '<img src="' . $coverPath . '" alt="Book Cover" class="img-fluid" style="width: 50px; height: auto;">';
+                                                    ?>
+                                                </div>
+                                            </div>
+                                            <div class="preview-item-content d-sm-flex flex-grow">
+                                                <div class="flex-grow">
+                                                    <h6 class="preview-subject"><?= htmlspecialchars($book['title'] ?? 'Judul Tidak Diketahui') ?></h6>
+                                                    <p class="text-muted"><?= htmlspecialchars($book['author'] ?? 'Penulis Tidak Diketahui') ?></p>
+                                                    <p class="text-muted">Favorited: <?= htmlspecialchars($book['favorite_count'] ?? '0') ?> times</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -455,6 +496,29 @@ $limitedBooks = array_slice($books, 0, 5);
     document.addEventListener('DOMContentLoaded', () => {
         renderTable(); // Initial render
     });
+
+
+    // JavaScript functions to show/hide book lists
+    function showToday() {
+        document.getElementById('todayBooks').style.display = 'block';
+        document.getElementById('favoriteBooks').style.display = 'none';
+        document.getElementById('btnToday').classList.add('btn-primary');
+        document.getElementById('btnToday').classList.remove('btn-secondary');
+        document.getElementById('btnFavorite').classList.remove('btn-primary');
+        document.getElementById('btnFavorite').classList.add('btn-secondary');
+    }
+
+    function showFavorite() {
+        document.getElementById('todayBooks').style.display = 'none';
+        document.getElementById('favoriteBooks').style.display = 'block';
+        document.getElementById('btnFavorite').classList.add('btn-primary');
+        document.getElementById('btnFavorite').classList.remove('btn-secondary');
+        document.getElementById('btnToday').classList.remove('btn-primary');
+        document.getElementById('btnToday').classList.add('btn-secondary');
+    }
+
+    // Initialize to show "Buku Hari Ini" on page load
+    document.addEventListener('DOMContentLoaded', showToday);
 </script>
 
 
